@@ -577,7 +577,7 @@ ${(analysisResult.roadmap90 || []).map((step: string) => `- ${step}`).join('\r\n
 
 ==================================================
 For career support, hotline support, and callback scheduling, contact:
-📞 Hotline: +91 70130 57827
+📞 Hotline: +91 70130 57827 / +44 7417 585004
 ✉️ Support Email: info@aurenzaacademy.com
 📍 Head Office: Gajuwaka, Visakhapatnam, India
 ==================================================`;

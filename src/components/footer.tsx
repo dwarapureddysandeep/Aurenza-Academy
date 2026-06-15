@@ -121,6 +121,10 @@ export default function Footer() {
                 <Phone className="w-4 h-4 text-secondary shrink-0" />
                 <a href="tel:+917013057827" className="hover:text-primary transition">+91 70130 57827</a>
               </li>
+              <li className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-secondary shrink-0" />
+                <a href="tel:+447417585004" className="hover:text-primary transition">+44 7417 585004</a>
+              </li>
               <li className="pt-2">
                 <button
                   type="button"

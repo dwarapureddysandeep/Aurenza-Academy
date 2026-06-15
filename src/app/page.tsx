@@ -279,6 +279,7 @@ export default async function HomePage() {
                   <div>
                     <h5 className="font-extrabold text-textPrimary heading">Corporate Hotline</h5>
                     <Link href="tel:+917013057827" className="text-xs text-textSecondary hover:text-primary transition mt-1 block">+91 7013057827</Link>
+                    <Link href="tel:+447417585004" className="text-xs text-textSecondary hover:text-primary transition mt-1 block">+44 7417 585004</Link>
                   </div>
                 </div>
 

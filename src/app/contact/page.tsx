@@ -50,6 +50,7 @@ export default function ContactPage() {
                   <div>
                     <h5 className="font-bold text-white">Corporate Support Hotline</h5>
                     <Link href="tel:+917013057827" className="text-xs text-neutral-400 hover:text-white transition mt-1 block">+91 7013057827</Link>
+                    <Link href="tel:+447417585004" className="text-xs text-neutral-400 hover:text-white transition mt-1 block">+44 7417 585004</Link>
                   </div>
                 </div>
 

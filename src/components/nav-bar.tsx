@@ -133,8 +133,8 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
             />
           </Link>
 
-          {/* Center Navigation Links (spacing 24px - 32px) */}
-          <ul className="hidden lg:flex items-center gap-6 xl:gap-8">
+          {/* Center Navigation Links (spacing 16px - 24px, no-wrap, shrink-0) */}
+          <ul className="hidden lg:flex items-center gap-4 xl:gap-6 flex-nowrap whitespace-nowrap">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               
@@ -142,11 +142,11 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
                 return (
                   <li
                     key={link.label}
-                    className="h-full py-4 relative flex items-center"
+                    className="h-full py-4 relative flex items-center shrink-0 whitespace-nowrap"
                     onMouseEnter={() => setMegaOpen(true)}
                     onMouseLeave={() => setMegaOpen(false)}
                   >
-                    <button className="flex items-center gap-1 text-sm font-bold text-textPrimary hover:text-primary transition-colors duration-200">
+                    <button className="flex items-center gap-1 text-sm font-bold text-textPrimary hover:text-primary transition-colors duration-200 whitespace-nowrap">
                       {link.label}
                       <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${megaOpen ? 'rotate-180 text-primary' : ''}`} />
                     </button>
@@ -230,10 +230,10 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
               }
 
               return (
-                <li key={link.label} className="relative py-1">
+                <li key={link.label} className="relative py-1 shrink-0 whitespace-nowrap">
                   <Link
                     href={link.href}
-                    className={`text-sm font-bold transition-all duration-200 relative ${
+                    className={`text-sm font-bold transition-all duration-200 relative whitespace-nowrap ${
                       isActive ? 'text-primary' : 'text-textPrimary hover:text-primary'
                     }`}
                   >

@@ -87,7 +87,8 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="info@aurenzaacademy.com"
+              placeholder="Enter admin email"
+              autoComplete="off"
               className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
             />
           </div>
@@ -102,7 +103,8 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Enter password"
+              autoComplete="new-password"
               className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
             />
           </div>

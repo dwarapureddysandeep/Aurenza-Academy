@@ -30,6 +30,34 @@ interface TestimonialsProps {
   isHomepage?: boolean;
 }
 
+function TestimonialAvatar({ src, name }: { src?: string; name: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  const initials = name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+
+  if (!src || hasError) {
+    return (
+      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#7A008C] to-[#E85AD9] text-white flex items-center justify-center text-sm font-black tracking-wider shadow-sm shrink-0 border border-white">
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={name}
+      onError={() => setHasError(true)}
+      className="w-14 h-14 rounded-full object-cover border border-[#ECECF4] shrink-0"
+    />
+  );
+}
+
 export default function Testimonials({ initialTestimonials, limit, isHomepage = false }: TestimonialsProps) {
   const [activeVideo, setActiveVideo] = useState<VideoTestimonial | null>(null);
 
@@ -73,7 +101,7 @@ export default function Testimonials({ initialTestimonials, limit, isHomepage = 
   const allTestimonials = [
     ...(initialTestimonials || []).map(t => ({
       ...t,
-      image: t.image || `https://images.unsplash.com/photo-${t.id === 'test-1' ? '534528741775-53994a69daeb' : '539571696357-5a69c17a67c6'}?auto=format&fit=crop&w=120&h=120&q=80`
+      image: t.image || `https://images.unsplash.com/photo-${t.id === 'test-1' ? '1534528741775-53994a69daeb' : '1539571696357-5a69c17a67c6'}?auto=format&fit=crop&w=120&h=120&q=80`
     })),
     ...customTestimonials
   ];
@@ -154,7 +182,7 @@ export default function Testimonials({ initialTestimonials, limit, isHomepage = 
           {displayTestimonials.map((item) => (
             <div
               key={item.id}
-              className="bg-white border border-[#ECECF4] rounded-[16px] p-8 shadow-sm flex flex-col justify-between hover:shadow-soft hover:-translate-y-1 transition duration-300 relative"
+              className="bg-white border border-[#ECECF4] rounded-[16px] p-8 shadow-sm flex flex-col justify-between hover:shadow-premium hover:-translate-y-1.5 hover:border-primary/20 transition-all duration-300 relative"
             >
               {/* Quote Mark Decoration */}
               <Quote className="absolute top-6 right-6 w-8 h-8 text-primary/5 pointer-events-none" />
@@ -174,15 +202,11 @@ export default function Testimonials({ initialTestimonials, limit, isHomepage = 
               </div>
 
               {/* Student Metadata */}
-              <div className="flex items-center gap-3 pt-6 border-t border-borderLight mt-6 shrink-0">
-                <img 
-                  src={item.image} 
-                  alt={item.name} 
-                  className="w-10 h-10 rounded-full object-cover border border-borderLight"
-                />
+              <div className="flex items-center gap-4 pt-5 border-t border-borderLight mt-6 shrink-0">
+                <TestimonialAvatar src={item.image} name={item.name} />
                 <div>
-                  <h4 className="text-xs font-black text-textPrimary leading-none heading">{item.name}</h4>
-                  <span className="text-[10px] text-textSecondary font-bold mt-1 block">{item.role}</span>
+                  <h4 className="text-sm font-black text-textPrimary leading-none heading">{item.name}</h4>
+                  <span className="text-xs text-textSecondary font-bold mt-1 block">{item.role}</span>
                 </div>
               </div>
             </div>

@@ -18,6 +18,11 @@ const nextConfig = {
         destination: '/why-us',
         permanent: true,
       },
+      {
+        source: '/corporate',
+        destination: '/business-solutions',
+        permanent: true,
+      },
     ];
   },
 };

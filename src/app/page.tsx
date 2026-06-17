@@ -5,16 +5,12 @@ import { ArrowRight, Star, Code, Laptop, Users, Target, Phone, Mail, MapPin, Che
 import { db } from '@/lib/db';
 import CourseFilterGrid from '@/components/course-filter-grid';
 import RoadmapExplorer from '@/components/roadmap-explorer';
-import FAQAccordion from '@/components/faq-accordion';
-import CorporateForm from '@/components/corporate-form';
-import ContactForm from '@/components/contact-form';
+
 import CounselingButton from '@/components/counseling-button';
 import HeroSection from '@/components/hero-section';
 import PopularCategories from '@/components/popular-categories';
 import TrendingCourses from '@/components/trending-courses';
-import WhyChooseAurenza from '@/components/why-choose-aurenza';
 import Testimonials from '@/components/testimonials';
-import CorporateTraining from '@/components/corporate-training';
 
 export const revalidate = 60; // Revalidate cache every 60 seconds
 
@@ -59,7 +55,8 @@ export default async function HomePage() {
           </div>
 
           {/* Dynamic filtering courses catalog */}
-          <CourseFilterGrid initialCourses={courses} />
+          {/* Dynamic filtering courses catalog limited to 6 on homepage */}
+          <CourseFilterGrid initialCourses={courses} limit={6} isHomepage={true} />
 
         </div>
       </section>
@@ -85,88 +82,12 @@ export default async function HomePage() {
       </section>
 
       {/* ==========================================
-         SECTION 4: WHY CHOOSE AURENZA (Trust & Differentiation Section)
-         ========================================== */}
-      <WhyChooseAurenza />
-
-      {/* ==========================================
-         SECTION 5: UPCOMING BATCHES (White Background)
-         ========================================== */}
-      <section className="py-24 border-t border-borderLight bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center space-y-2 mb-14">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Live Scheduler</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-textPrimary heading">
-              Upcoming <span className="text-gradient-purple-pink">Cohort Timetable</span>
-            </h2>
-            <p className="text-xs sm:text-sm text-textSecondary max-w-lg mx-auto">
-              Secure your batch seat. Cohorts are limited to 30 seats to ensure proper mock reviews and 1-on-1 counselor allocations.
-            </p>
-          </div>
-
-          <div className="bg-white border border-borderLight rounded-2xl overflow-hidden shadow-premium">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs sm:text-sm border-collapse">
-                <thead>
-                  <tr className="border-b border-borderLight bg-sectionBg text-textPrimary font-bold uppercase text-[10px] tracking-wider">
-                    <th className="p-5 font-black">Certification Program</th>
-                    <th className="p-5 font-black">Cohort Start Date</th>
-                    <th className="p-5 font-black">Class Time Slots</th>
-                    <th className="p-5 font-black">Corporate Mentor</th>
-                    <th className="p-5 font-black text-center">Remaining Seats</th>
-                    <th className="p-5 text-right font-black">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-borderLight text-xs text-textSecondary">
-                  {batches.map((batch: any) => {
-                    const matchedCourse = courses.find((c: any) => c.id === batch.courseId);
-                    return (
-                      <tr key={batch.id} className="hover:bg-sectionBg/40 transition duration-200">
-                        <td className="p-5 font-extrabold text-textPrimary heading flex items-center gap-2.5">
-                          <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shrink-0"></div>
-                          {matchedCourse ? matchedCourse.name : "Engineering Course"}
-                        </td>
-                        <td className="p-5 font-medium text-textPrimary">{batch.startDate}</td>
-                        <td className="p-5 font-medium text-textPrimary">{batch.timeSlot}</td>
-                        <td className="p-5 text-textPrimary font-bold">Dr. Ramesh Kumar</td>
-                        <td className="p-5 text-center">
-                          <span className="px-2.5 py-1 rounded-full bg-primary/5 text-primary font-bold text-[10px] tracking-wider uppercase border border-primary/10">
-                            {batch.seatsLeft} Seats Left
-                          </span>
-                        </td>
-                        <td className="p-5 text-right">
-                          <CounselingButton
-                            source="Timetable Batches Grid"
-                            prefilledCourse={matchedCourse?.name}
-                            className="px-4 py-2 rounded-lg bg-primary hover:bg-primaryHover text-[10px] text-white tracking-wider uppercase transition shadow-soft font-black"
-                          >
-                            Reserve Seat &rarr;
-                          </CounselingButton>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ==========================================
-         SECTION 6: TESTIMONIALS (Social Proof & Trust Section)
+         SECTION 4: TESTIMONIALS (Social Proof & Trust Section)
          ========================================== */}
       <Testimonials initialTestimonials={testimonials} />
 
       {/* ==========================================
-         SECTION 7: CORPORATE TRAINING (High-Value Lead Generation Section)
-         ========================================== */}
-      <CorporateTraining />
-
-      {/* ==========================================
-         SECTION 8: UPCOMING WEBINARS (Off-White Background)
+         SECTION 5: UPCOMING WEBINARS (Off-White Background)
          ========================================== */}
       <section className="py-24 bg-sectionBg border-t border-borderLight">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -219,107 +140,47 @@ export default async function HomePage() {
       </section>
 
       {/* ==========================================
-         SECTION 10: FAQ SECTION (Objection Handling & Conversion Booster)
+         SECTION 6: CONTACT CALL-TO-ACTION (Compact & Conversion Focused)
          ========================================== */}
-      <section className="py-24 bg-sectionBg border-t border-borderLight">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-          
-          <div className="text-center space-y-3 mb-14 max-w-2xl mx-auto">
+      <section className="py-16 bg-white border-t border-borderLight relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/5 rounded-full filter blur-[100px] pointer-events-none"></div>
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-6">
+          <div className="space-y-2">
             <span className="text-[10px] font-extrabold text-[#7A008C] uppercase tracking-widest bg-[#7A008C]/5 px-3 py-1 rounded-full">
-              Got Questions? We Have Answers
+              Get Expert Guidance
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-textPrimary heading tracking-tight">
-              Frequently Asked <span className="text-gradient-purple-pink">Questions</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-textPrimary heading tracking-tight">
+              Need Help Choosing the <span className="text-gradient-purple-pink">Right Course?</span>
             </h2>
-            <p className="text-xs sm:text-sm text-textSecondary leading-relaxed">
-              Find answers to the most common questions about our courses, certifications, and training programs.
+            <p className="text-xs sm:text-sm text-textSecondary max-w-md mx-auto leading-relaxed">
+              Talk with our learning advisors and get personalized guidance for your career goals.
             </p>
           </div>
 
-          <FAQAccordion />
-
-        </div>
-      </section>
-
-      {/* ==========================================
-         SECTION 11: HQ CONTACTS HUB & MAP (White Background)
-         ========================================== */}
-      <section id="contact-section" className="py-24 border-t border-borderLight bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="grid gap-12 lg:grid-cols-12 items-start">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/contact"
+              className="w-full sm:w-auto px-6 py-3 rounded-btn border border-borderLight text-[#5A5A6A] text-xs font-bold hover:bg-[#FAFAFC] hover:text-[#1A1A1A] transition flex items-center justify-center gap-1.5"
+            >
+              Contact Us
+            </Link>
             
-            {/* Contact details & Map */}
-            <div className="lg:col-span-6 space-y-8">
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Connect with our team</span>
-                <h2 className="text-3xl font-extrabold text-textPrimary heading">
-                  Visit Our HQ or <span className="text-gradient-purple-pink">Talk to an Advisor</span>
-                </h2>
-                <p className="text-xs sm:text-sm text-textSecondary leading-relaxed">
-                  Have questions about course costs, weekend cohort schedules, or placement referral guarantees? Talk to our corporate counseling team directly.
-                </p>
-              </div>
+            <a
+              href="https://wa.me/917013057827?text=Hello%20Aurenza%20Academy!%20I%20would%20like%20to%20enquire%20about%20your%20upcoming%20live%20cohorts%2C%20placement%20referrals%2C%20and%20AI%20Career%20Counseling%20packages."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto px-6 py-3 rounded-btn bg-[#25D366]/5 border border-[#25D366]/20 text-[#128C7E] text-xs font-bold hover:bg-[#25D366]/10 transition flex items-center justify-center gap-1.5"
+            >
+              WhatsApp Us
+            </a>
 
-              <div className="space-y-4 text-xs sm:text-sm text-textPrimary font-semibold">
-                <div className="flex gap-3 items-start">
-                  <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/10 text-primary shrink-0 mt-1">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h5 className="font-extrabold text-textPrimary heading">Academy Head Office</h5>
-                    <p className="text-xs text-textSecondary mt-1">Gajuwaka, Vishakapatanam, India</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 items-start">
-                  <div className="p-2.5 rounded-xl bg-secondary/5 border border-secondary/10 text-secondary shrink-0 mt-1">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h5 className="font-extrabold text-textPrimary heading">Corporate Hotline</h5>
-                    <Link href="tel:+917013057827" className="text-xs text-textSecondary hover:text-primary transition mt-1 block">+91 7013057827</Link>
-                    <Link href="tel:+447417585004" className="text-xs text-textSecondary hover:text-primary transition mt-1 block">+44 7417 585004</Link>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 items-start">
-                  <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/10 text-primary shrink-0 mt-1">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h5 className="font-extrabold text-textPrimary heading">Support Mail</h5>
-                    <Link href="mailto:info@aurenzaacademy.com" className="text-xs text-textSecondary hover:text-primary transition mt-1 block">info@aurenzaacademy.com</Link>
-                  </div>
-                </div>
-              </div>
-
-              {/* HQ Map overlay */}
-              <div className="relative h-64 w-full rounded-2xl overflow-hidden border border-borderLight bg-sectionBg">
-                <iframe 
-                  src="https://maps.google.com/maps?q=Gajuwaka,%20Vishakapatanam,%20India&t=&z=15&ie=UTF8&iwloc=&output=embed" 
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0, opacity: 0.8 }} 
-                  allowFullScreen={false} 
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Aurenza HQ Google Maps"
-                ></iframe>
-              </div>
-            </div>
-
-            {/* Inbound lead query form */}
-            <div className="lg:col-span-6 bg-sectionBg border border-borderLight p-6 sm:p-8 rounded-[32px] shadow-premium relative self-stretch flex flex-col justify-center">
-              <div className="space-y-4 mb-6">
-                <h4 className="text-lg font-extrabold text-textPrimary heading leading-none">Drop Us A Message</h4>
-                <p className="text-xs text-textSecondary">Specify your questions, and our enrollment officers will email standard brochures.</p>
-              </div>
-              <ContactForm />
-            </div>
-
+            <CounselingButton
+              source="Homepage Contact CTA"
+              className="w-full sm:w-auto px-6 py-3 rounded-btn bg-gradient-to-r from-[#7A008C] to-[#E85AD9] hover:from-[#E85AD9] hover:to-[#7A008C] text-white text-xs font-black uppercase tracking-wider hover:shadow-glowPurple hover:scale-[1.02] transition duration-300"
+            >
+              Book Free Counseling
+            </CounselingButton>
           </div>
-
         </div>
       </section>
 

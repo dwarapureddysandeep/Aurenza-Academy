@@ -9,12 +9,16 @@ interface CourseFilterGridProps {
   initialCourses: any[];
   searchParam?: string;
   initialCategory?: string;
+  limit?: number;
+  isHomepage?: boolean;
 }
 
 export default function CourseFilterGrid({ 
   initialCourses, 
   searchParam = '', 
-  initialCategory = 'All' 
+  initialCategory = 'All',
+  limit,
+  isHomepage = false
 }: CourseFilterGridProps) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'All');
   const [searchQuery, setSearchQuery] = useState(searchParam);
@@ -48,8 +52,29 @@ export default function CourseFilterGrid({
     { label: 'Software Testing', value: 'Testing' }
   ];
 
-  // Filter logic
-  const filteredCourses = initialCourses.filter(course => {
+  // Sort priority flagship courses to the top
+  const prioritySlugs = [
+    'java-full-stack-development',
+    'frontend-development-react-nextjs',
+    'ai-machine-learning-engineering',
+    'aws-solutions-architect',
+    'pmp-certification',
+    'csm-certification',
+    'certified-scrummaster-csm'
+  ];
+
+  const sortedCourses = [...initialCourses].sort((a, b) => {
+    const indexA = prioritySlugs.indexOf(a.slug);
+    const indexB = prioritySlugs.indexOf(b.slug);
+    
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    return 0;
+  });
+
+  // Filter logic on sorted list
+  const filteredCourses = sortedCourses.filter(course => {
     // Category match
     const categoryMatch = selectedCategory === 'All'
       ? true
@@ -64,6 +89,8 @@ export default function CourseFilterGrid({
 
     return categoryMatch && searchMatch;
   });
+
+  const coursesToDisplay = limit ? filteredCourses.slice(0, limit) : filteredCourses;
 
   const triggerEnroll = (courseName: string) => {
     window.dispatchEvent(new CustomEvent('open-lead-modal', { 
@@ -131,8 +158,8 @@ export default function CourseFilterGrid({
          COURSE CARDS GRID (Exactly matching Screenshot 2)
          ========================================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
-        {filteredCourses.length > 0 ? (
-          filteredCourses.map((course, idx) => {
+        {coursesToDisplay.length > 0 ? (
+          coursesToDisplay.map((course, idx) => {
             // Determine dynamic badge types: "Recommended" or "Trending"
             const isRecommended = idx % 2 === 0;
             const badgeLabel = isRecommended ? 'Recommended' : 'Trending';
@@ -245,6 +272,18 @@ export default function CourseFilterGrid({
           </div>
         )}
       </div>
+
+      {isHomepage && (
+        <div className="flex justify-center pt-12">
+          <Link
+            href="/courses"
+            className="px-8 py-4 bg-gradient-to-r from-[#7A008C] to-[#E85AD9] hover:from-[#E85AD9] hover:to-[#7A008C] text-white text-xs font-black uppercase tracking-wider rounded-full hover:shadow-glowPurple hover:scale-[1.03] transition-all duration-300 transform active:scale-95 shadow-md flex items-center gap-2 group shrink-0"
+          >
+            <span>View More Courses</span>
+            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+        </div>
+      )}
 
       {/* ── DYNAMIC CURRICULUM DRAWER (SLIDES FROM RIGHT) ────────────────────────── */}
       <AnimatePresence>

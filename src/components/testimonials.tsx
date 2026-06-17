@@ -68,7 +68,7 @@ export default function Testimonials({ initialTestimonials }: TestimonialsProps)
 
   // Map initials if no image is available
   const allTestimonials = [
-    ...initialTestimonials.map(t => ({
+    ...(initialTestimonials || []).map(t => ({
       ...t,
       image: t.image || `https://images.unsplash.com/photo-${t.id === 'test-1' ? '534528741775-53994a69daeb' : '539571696357-5a69c17a67c6'}?auto=format&fit=crop&w=120&h=120&q=80`
     })),
@@ -146,13 +146,9 @@ export default function Testimonials({ initialTestimonials }: TestimonialsProps)
 
         {/* Written Review Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {allTestimonials.map((item, idx) => (
-            <motion.div
+          {allTestimonials.map((item) => (
+            <div
               key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
               className="bg-white border border-[#ECECF4] rounded-[16px] p-8 shadow-sm flex flex-col justify-between hover:shadow-soft hover:-translate-y-1 transition duration-300 relative"
             >
               {/* Quote Mark Decoration */}
@@ -184,7 +180,7 @@ export default function Testimonials({ initialTestimonials }: TestimonialsProps)
                   <span className="text-[10px] text-textSecondary font-bold mt-1 block">{item.role}</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 

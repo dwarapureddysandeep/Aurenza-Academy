@@ -10,7 +10,8 @@ import { getCurrentUser, logoutUser } from '@/lib/actions';
 const navLinks = [
   { label: 'Courses', href: '#', hasMega: true },
   { label: 'Certifications', href: '/courses' },
-  { label: 'Corporate Training', href: '/corporate' },
+  { label: 'Upcoming Cohorts', href: '/upcoming-cohorts' },
+  { label: 'Business Solutions', href: '/business-solutions' },
   { label: 'Why Us', href: '/why-us' },
   { label: 'About Us', href: '/about' },
 ];
@@ -122,7 +123,7 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
           isScrolled ? 'h-16 shadow-soft' : 'h-20'
         }`}
       >
-        <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-6">
+        <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 xl:gap-6">
           
           {/* Logo & Brand Name */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 select-none group" aria-label="Aurenza">
@@ -134,7 +135,7 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
           </Link>
 
           {/* Center Navigation Links (spacing 16px - 24px, no-wrap, shrink-0) */}
-          <ul className="hidden lg:flex items-center gap-4 xl:gap-6 flex-nowrap whitespace-nowrap">
+          <ul className="hidden lg:flex items-center gap-3 xl:gap-5 flex-nowrap whitespace-nowrap">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               
@@ -146,7 +147,7 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
                     onMouseEnter={() => setMegaOpen(true)}
                     onMouseLeave={() => setMegaOpen(false)}
                   >
-                    <button className="flex items-center gap-1 text-sm font-bold text-textPrimary hover:text-primary transition-colors duration-200 whitespace-nowrap">
+                    <button className="flex items-center gap-1 text-xs xl:text-sm font-bold text-textPrimary hover:text-primary transition-colors duration-200 whitespace-nowrap">
                       {link.label}
                       <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${megaOpen ? 'rotate-180 text-primary' : ''}`} />
                     </button>
@@ -233,7 +234,7 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
                 <li key={link.label} className="relative py-1 shrink-0 whitespace-nowrap">
                   <Link
                     href={link.href}
-                    className={`text-sm font-bold transition-all duration-200 relative whitespace-nowrap ${
+                    className={`text-xs xl:text-sm font-bold transition-all duration-200 relative whitespace-nowrap ${
                       isActive ? 'text-primary' : 'text-textPrimary hover:text-primary'
                     }`}
                   >
@@ -250,8 +251,8 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
           {/* Right Action Section */}
           <div className="flex items-center gap-4 shrink-0">
             
-            {/* Compact Search Bar */}
-            <form onSubmit={handleSearchSubmit} className="hidden md:flex items-center bg-sectionBg border border-borderLight rounded-badge px-3.5 py-1.5 w-44 xl:w-56 focus-within:ring-2 focus-within:ring-primary/10 transition">
+            {/* Compact Search Bar (hidden on lg desktops to avoid menu wrapping, shown on md tablets and xl wide screens) */}
+            <form onSubmit={handleSearchSubmit} className="hidden md:flex lg:hidden xl:flex items-center bg-sectionBg border border-borderLight rounded-badge px-3 py-1.5 w-32 xl:w-44 focus-within:ring-2 focus-within:ring-primary/10 transition">
               <Search className="w-3.5 h-3.5 text-[#8A8A9A] mr-2 shrink-0" />
               <input
                 type="text"
@@ -316,11 +317,11 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="hidden lg:flex items-center gap-2.5">
+              <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
                 {/* Secondary Button: login */}
                 <Link
                   href="/login"
-                  className="h-10 px-4 rounded-btn border border-primary text-primary hover:bg-purple-50/20 font-bold text-xs inline-flex items-center justify-center transition"
+                  className="h-9 px-3 xl:px-4 rounded-btn border border-primary text-primary hover:bg-purple-50/20 font-bold text-[11px] inline-flex items-center justify-center transition shrink-0 whitespace-nowrap"
                 >
                   Admin Portal
                 </Link>
@@ -329,7 +330,7 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
                 <button
                   type="button"
                   onClick={openConsultationModal}
-                  className="h-10 px-5 rounded-btn bg-brand-gradient text-white font-bold text-xs inline-flex items-center justify-center transition hover:opacity-90 hover:shadow-soft"
+                  className="h-9 px-4 xl:px-5 rounded-btn bg-brand-gradient text-white font-bold text-[11px] inline-flex items-center justify-center transition hover:opacity-90 hover:shadow-soft shrink-0 whitespace-nowrap"
                 >
                   Join Immediately
                 </button>

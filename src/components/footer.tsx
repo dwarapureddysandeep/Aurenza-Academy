@@ -58,7 +58,7 @@ export default function Footer() {
               <li><Link href="/about" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">About Us</Link></li>
               <li><Link href="/about#story" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Our Story</Link></li>
               <li><Link href="/login" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Careers</Link></li>
-              <li><Link href="/corporate" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Corporate Training</Link></li>
+              <li><Link href="/business-solutions" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Corporate Training</Link></li>
               <li><Link href="/contact" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Contact Us</Link></li>
             </ul>
           </div>
@@ -101,9 +101,9 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><Link href="/why-us" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Why Us</Link></li>
               <li><Link href="/#webinars" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Webinars</Link></li>
-              <li><Link href="/corporate" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Case Studies</Link></li>
+              <li><Link href="/business-solutions" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Case Studies</Link></li>
               <li><Link href="/about" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">About Us</Link></li>
-              <li><Link href="/#faqs" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">FAQs</Link></li>
+              <li><Link href="/contact" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">FAQs</Link></li>
             </ul>
           </div>
 
@@ -136,7 +136,7 @@ export default function Footer() {
                 </button>
               </li>
               <li><Link href="/contact" className="hover:text-primary transition block text-xs underline underline-offset-2">Submit Support Inquiry</Link></li>
-              <li><Link href="/corporate" className="hover:text-primary transition block text-xs underline underline-offset-2">Business Enquiries</Link></li>
+              <li><Link href="/business-solutions" className="hover:text-primary transition block text-xs underline underline-offset-2">Business Enquiries</Link></li>
             </ul>
           </div>
 

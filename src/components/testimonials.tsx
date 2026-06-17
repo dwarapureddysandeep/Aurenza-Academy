@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Play, X, Check, Quote, Users, Award, ShieldAlert } from 'lucide-react';
 
@@ -25,9 +26,11 @@ interface VideoTestimonial {
 
 interface TestimonialsProps {
   initialTestimonials: TestimonialData[];
+  limit?: number;
+  isHomepage?: boolean;
 }
 
-export default function Testimonials({ initialTestimonials }: TestimonialsProps) {
+export default function Testimonials({ initialTestimonials, limit, isHomepage = false }: TestimonialsProps) {
   const [activeVideo, setActiveVideo] = useState<VideoTestimonial | null>(null);
 
   // Combine database-fetched testimonials with additional high-quality mock data
@@ -73,7 +76,9 @@ export default function Testimonials({ initialTestimonials }: TestimonialsProps)
       image: t.image || `https://images.unsplash.com/photo-${t.id === 'test-1' ? '534528741775-53994a69daeb' : '539571696357-5a69c17a67c6'}?auto=format&fit=crop&w=120&h=120&q=80`
     })),
     ...customTestimonials
-  ].slice(0, 6); // Cap at 6 written reviews
+  ];
+
+  const displayTestimonials = isHomepage && limit ? allTestimonials.slice(0, limit) : allTestimonials.slice(0, 6);
 
   const videoTestimonials: VideoTestimonial[] = [
     {
@@ -110,7 +115,7 @@ export default function Testimonials({ initialTestimonials }: TestimonialsProps)
   ];
 
   return (
-    <section className="py-24 bg-white border-t border-borderLight relative overflow-hidden">
+    <section className={`${isHomepage ? 'py-16' : 'py-24'} bg-white border-t border-borderLight relative overflow-hidden`}>
       
       {/* Decorative blurred backgrounds */}
       <div className="absolute top-10 right-10 w-[300px] h-[300px] bg-primary/5 rounded-full filter blur-[100px] pointer-events-none"></div>
@@ -145,8 +150,8 @@ export default function Testimonials({ initialTestimonials }: TestimonialsProps)
         </div>
 
         {/* Written Review Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {allTestimonials.map((item) => (
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${isHomepage ? 'lg:grid-cols-2 max-w-4xl mx-auto' : 'lg:grid-cols-3'} gap-8`}>
+          {displayTestimonials.map((item) => (
             <div
               key={item.id}
               className="bg-white border border-[#ECECF4] rounded-[16px] p-8 shadow-sm flex flex-col justify-between hover:shadow-soft hover:-translate-y-1 transition duration-300 relative"
@@ -184,92 +189,110 @@ export default function Testimonials({ initialTestimonials }: TestimonialsProps)
           ))}
         </div>
 
-        {/* Video Testimonials Subsection */}
-        <div className="space-y-8 pt-8">
-          <div className="text-center space-y-2">
-            <span className="text-[10px] font-extrabold text-[#7A008C] uppercase tracking-widest leading-none bg-[#7A008C]/5 px-3 py-1 rounded-full">
-              Authentic Stories
-            </span>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-textPrimary heading">
-              Hear Directly From <span className="text-gradient-purple-pink">Our Learners</span>
-            </h3>
-            <p className="text-xs text-textSecondary max-w-md mx-auto">
-              Real stories of career pivots, salary bumps, and certification preparation victories.
-            </p>
+        {/* View More Reviews CTA for Homepage */}
+        {isHomepage && (
+          <div className="flex justify-center pt-10">
+            <Link
+              href="/success-stories"
+              className="px-8 py-3.5 rounded-btn bg-gradient-to-r from-[#7A008C] to-[#E85AD9] hover:from-[#E85AD9] hover:to-[#7A008C] text-white text-xs font-black uppercase tracking-wider hover:shadow-glowPurple hover:scale-[1.02] transition duration-300"
+            >
+              View More Reviews
+            </Link>
           </div>
+        )}
 
-          {/* Video Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {videoTestimonials.map((vid) => (
-              <div 
-                key={vid.id}
-                onClick={() => setActiveVideo(vid)}
-                className="group cursor-pointer bg-white rounded-card overflow-hidden border border-borderLight shadow-sm hover:shadow-soft transition-all duration-300"
-              >
-                {/* Thumbnail Area */}
-                <div className="relative h-48 bg-slate-100 overflow-hidden flex items-center justify-center">
-                  <img 
-                    src={vid.thumbnail} 
-                    alt={vid.studentName} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {/* Play Button Overlay */}
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full bg-white/95 text-primary flex items-center justify-center shadow-lg transform group-hover:scale-110 active:scale-95 transition duration-300">
-                      <Play className="w-5 h-5 fill-primary text-primary ml-0.5" />
+        {/* Video Testimonials Subsection */}
+        {!isHomepage && (
+          <div className="space-y-8 pt-8">
+            <div className="text-center space-y-2">
+              <span className="text-[10px] font-extrabold text-[#7A008C] uppercase tracking-widest leading-none bg-[#7A008C]/5 px-3 py-1 rounded-full">
+                Authentic Stories
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-textPrimary heading">
+                Hear Directly From <span className="text-gradient-purple-pink">Our Learners</span>
+              </h3>
+              <p className="text-xs text-textSecondary max-w-md mx-auto">
+                Real stories of career pivots, salary bumps, and certification preparation victories.
+              </p>
+            </div>
+
+            {/* Video Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {videoTestimonials.map((vid) => (
+                <div 
+                  key={vid.id}
+                  onClick={() => setActiveVideo(vid)}
+                  className="group cursor-pointer bg-white rounded-card overflow-hidden border border-borderLight shadow-sm hover:shadow-soft transition-all duration-300"
+                >
+                  {/* Thumbnail Area */}
+                  <div className="relative h-48 bg-slate-100 overflow-hidden flex items-center justify-center">
+                    <img 
+                      src={vid.thumbnail} 
+                      alt={vid.studentName} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-white/95 text-primary flex items-center justify-center shadow-lg transform group-hover:scale-110 active:scale-95 transition duration-300">
+                        <Play className="w-5 h-5 fill-primary text-primary ml-0.5" />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Video Info Footer */}
-                <div className="p-5 space-y-1">
-                  <h4 className="text-xs font-black text-textPrimary leading-none heading">{vid.studentName}</h4>
-                  <p className="text-[10px] text-textSecondary font-bold">
-                    Completed: <span className="text-primary">{vid.courseCompleted}</span>
-                  </p>
+                  {/* Video Info Footer */}
+                  <div className="p-5 space-y-1">
+                    <h4 className="text-xs font-black text-textPrimary leading-none heading">{vid.studentName}</h4>
+                    <p className="text-[10px] text-textSecondary font-bold">
+                      Completed: <span className="text-primary">{vid.courseCompleted}</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Grayscale Hiring Company Logos Strip */}
-        <div className="border-t border-b border-borderLight py-10 space-y-4">
-          <p className="text-center text-[10px] uppercase font-extrabold tracking-widest text-[#8A8A9A]">
-            Aurenza Alumni Upskill & Work At Leading Enterprises
-          </p>
-          
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-2">
-            {companyLogos.map((logo, idx) => (
-              <div 
-                key={idx}
-                className="text-[#8A8A9A] hover:text-primary transition duration-300 font-black tracking-widest text-xs sm:text-sm select-none border border-[#ECECF4] px-4.5 py-2.5 rounded-xl bg-[#FAFAFC]/40 cursor-default"
-              >
-                {logo.name}
-              </div>
-            ))}
+        {!isHomepage && (
+          <div className="border-t border-b border-borderLight py-10 space-y-4">
+            <p className="text-center text-[10px] uppercase font-extrabold tracking-widest text-[#8A8A9A]">
+              Aurenza Alumni Upskill & Work At Leading Enterprises
+            </p>
+            
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-2">
+              {companyLogos.map((logo, idx) => (
+                <div 
+                  key={idx}
+                  className="text-[#8A8A9A] hover:text-primary transition duration-300 font-black tracking-widest text-xs sm:text-sm select-none border border-[#ECECF4] px-4.5 py-2.5 rounded-xl bg-[#FAFAFC]/40 cursor-default"
+                >
+                  {logo.name}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Trust Badges Row */}
-        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-bold text-textSecondary pt-4">
-          <div className="flex items-center gap-1.5">
-            <Check className="w-4 h-4 text-green-500 shrink-0" />
-            <span>Certified Trainers</span>
+        {!isHomepage && (
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-bold text-textSecondary pt-4">
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-green-500 shrink-0" />
+              <span>Certified Trainers</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-green-500 shrink-0" />
+              <span>Live Instructor-Led Sessions</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-green-500 shrink-0" />
+              <span>Hands-On Learning</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Check className="w-4 h-4 text-green-500 shrink-0" />
+              <span>1-on-1 Career Support</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Check className="w-4 h-4 text-green-500 shrink-0" />
-            <span>Live Instructor-Led Sessions</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Check className="w-4 h-4 text-green-500 shrink-0" />
-            <span>Hands-On Learning</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Check className="w-4 h-4 text-green-500 shrink-0" />
-            <span>1-on-1 Career Support</span>
-          </div>
-        </div>
+        )}
 
       </div>
 

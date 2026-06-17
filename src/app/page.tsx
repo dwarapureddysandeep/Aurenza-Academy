@@ -84,7 +84,7 @@ export default async function HomePage() {
       {/* ==========================================
          SECTION 4: TESTIMONIALS (Social Proof & Trust Section)
          ========================================== */}
-      <Testimonials initialTestimonials={testimonials} />
+      <Testimonials initialTestimonials={testimonials} limit={2} isHomepage={true} />
 
       {/* ==========================================
          SECTION 5: UPCOMING WEBINARS (Off-White Background)

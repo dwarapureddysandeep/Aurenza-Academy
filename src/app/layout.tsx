@@ -8,7 +8,7 @@ import { Toaster } from "react-hot-toast";
 import { getCurrentUser } from "@/lib/actions";
 
 export const metadata: Metadata = {
-  title: "Aurenza Academy - Premium Global IT & AI Career Certifications",
+  title: "Aurenza Academy - Learn Today, Lead Tomorrow",
   description: "Transform your career with industry-recognized certifications. Enroll in elite live cohorts for Java Full Stack, Next.js UI Engineering, Data Science, and Machine Learning with direct placement referrals.",
   icons: {
     icon: "/logo.png",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   keywords: ["Aurenza Academy", "PMP Certification", "CAPM prep", "Java Full Stack Development", "Next.js certification", "Machine Learning Bootcamp", "AI career training", "Hiring Partners", "Visakhapatnam EdTech"],
   metadataBase: new URL("https://www.aurenzaacademy.com"),
   openGraph: {
-    title: "Aurenza Academy | Advance Your Career With Elite Certifications",
+    title: "Aurenza Academy - Learn Today, Lead Tomorrow",
     description: "Equipping graduates and professionals with high-income tech skills. Learn from ex-Amazon/Google specialists.",
     url: "https://www.aurenzaacademy.com",
     siteName: "Aurenza Academy",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aurenza Academy | Advance Your Career With Elite Certifications",
+    title: "Aurenza Academy - Learn Today, Lead Tomorrow",
     description: "Equipping graduates and professionals with high-income tech skills.",
     images: ["/logo.jpg"],
   },

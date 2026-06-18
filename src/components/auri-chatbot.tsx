@@ -25,6 +25,362 @@ interface UploadedFile {
 
 export default function AuriChatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [snappedCorner, setSnappedCorner] = useState<'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'>('bottom-right');
+  const [coords, setCoords] = useState<{ x: number; y: number } | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  const dragRef = useRef({
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    btnStartX: 0,
+    btnStartY: 0,
+    hasMoved: false
+  });
+
+  const isCornerValid = (corner: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left') => {
+    if (typeof window === 'undefined') return false;
+    const btnSize = 56;
+    const bounds = getSafeBounds();
+    let x = 0;
+    let y = 0;
+    
+    switch (corner) {
+      case 'top-left':
+        x = bounds.left;
+        y = bounds.top;
+        break;
+      case 'top-right':
+        x = bounds.right - btnSize;
+        y = bounds.top;
+        break;
+      case 'bottom-left':
+        x = bounds.left;
+        y = bounds.bottom - btnSize;
+        break;
+      case 'bottom-right':
+      default:
+        x = bounds.right - btnSize;
+        y = bounds.bottom - btnSize;
+        break;
+    }
+    
+    // Check if outside viewport bounds
+    if (x < 0 || y < 0 || x + btnSize > window.innerWidth || y + btnSize > window.innerHeight) {
+      return false;
+    }
+    
+    // Check if overlaps with protected UI elements
+    const collision = checkElementCollisions(x, y, btnSize, btnSize);
+    if (collision.collided) {
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Trigger update on scroll or resize to recalculate dynamic safe area positions
+  const [, setWindowTrigger] = useState(0);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleUpdate = () => {
+      setWindowTrigger(prev => prev + 1);
+    };
+    
+    window.addEventListener('resize', handleUpdate, { passive: true });
+    window.addEventListener('scroll', handleUpdate, { passive: true });
+    
+    return () => {
+      window.removeEventListener('resize', handleUpdate);
+      window.removeEventListener('scroll', handleUpdate);
+    };
+  }, []);
+
+  const getSafeBounds = () => {
+    if (typeof window === 'undefined') {
+      return { left: 24, right: 800 - 24, top: 80, bottom: 600 - 24 };
+    }
+    
+    // 1. Calculate navbar height
+    let navbarHeight = 0;
+    const navbar = document.getElementById('main-navbar') || document.querySelector('nav');
+    if (navbar) {
+      navbarHeight = navbar.getBoundingClientRect().height;
+    } else {
+      navbarHeight = window.innerWidth >= 1024 ? 80 : 56;
+    }
+    
+    // 2. Calculate footer height visible in viewport
+    let footerHeight = 0;
+    const footer = document.querySelector('footer');
+    if (footer) {
+      const footerRect = footer.getBoundingClientRect();
+      if (footerRect.top < window.innerHeight) {
+        footerHeight = Math.max(0, window.innerHeight - footerRect.top);
+      }
+    }
+    
+    const safeTop = navbarHeight + 20;
+    const safeBottom = footerHeight + 20;
+    const safeLeft = 20;
+    const safeRight = 20;
+    
+    return {
+      left: safeLeft,
+      right: window.innerWidth - safeRight,
+      top: safeTop,
+      bottom: window.innerHeight - safeBottom
+    };
+  };
+
+  const checkElementCollisions = (x: number, y: number, width: number, height: number) => {
+    if (typeof window === 'undefined') return { collided: false };
+    
+    const widgetRect = {
+      left: x,
+      right: x + width,
+      top: y,
+      bottom: y + height
+    };
+    
+    // Elements we want to avoid
+    const targets = [
+      '#main-navbar',
+      '#nav-search-form',
+      '#admin-portal-btn',
+      '#join-immediately-btn',
+      'footer',
+    ];
+    
+    for (const selector of targets) {
+      const el = document.querySelector(selector);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const hasOverlap = !(
+            widgetRect.right < rect.left ||
+            widgetRect.left > rect.right ||
+            widgetRect.bottom < rect.top ||
+            widgetRect.top > rect.bottom
+          );
+          if (hasOverlap) {
+            return { collided: true, rect };
+          }
+        }
+      }
+    }
+    
+    // Check other fixed/sticky elements (excluding chatbot launcher/window itself)
+    const floatingEls = document.querySelectorAll('.fixed, .sticky');
+    for (let i = 0; i < floatingEls.length; i++) {
+      const el = floatingEls[i];
+      if (el.classList.contains('floating-chatbot') || (el.tagName.toLowerCase() === 'button' && el.getAttribute('title') === 'Chat with Auri AI')) {
+        continue;
+      }
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        const hasOverlap = !(
+          widgetRect.right < rect.left ||
+          widgetRect.left > rect.right ||
+          widgetRect.bottom < rect.top ||
+          widgetRect.top > rect.bottom
+        );
+        if (hasOverlap) {
+          return { collided: true, rect };
+        }
+      }
+    }
+    
+    return { collided: false };
+  };
+
+  const getCornerCoords = (corner: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left') => {
+    const bounds = getSafeBounds();
+    const btnSize = 56;
+    
+    let x = 0;
+    let y = 0;
+    
+    switch (corner) {
+      case 'top-left':
+        x = bounds.left;
+        y = bounds.top;
+        break;
+      case 'top-right':
+        x = bounds.right - btnSize;
+        y = bounds.top;
+        break;
+      case 'bottom-left':
+        x = bounds.left;
+        y = bounds.bottom - btnSize;
+        break;
+      case 'bottom-right':
+      default:
+        x = bounds.right - btnSize;
+        y = bounds.bottom - btnSize;
+        break;
+    }
+    
+    // Check collisions and adjust coordinates
+    const collision = checkElementCollisions(x, y, btnSize, btnSize);
+    if (collision.collided && collision.rect) {
+      const rect = collision.rect;
+      if (corner.startsWith('top')) {
+        // Push below the colliding element
+        y = Math.max(y, rect.bottom + 20);
+      } else {
+        // Push above the colliding element
+        y = Math.min(y, rect.top - btnSize - 20);
+      }
+    }
+    
+    return { x, y };
+  };
+
+  const getChatWindowStyle = (corner: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left') => {
+    const bounds = getSafeBounds();
+    const style: React.CSSProperties = {
+      position: 'fixed',
+      zIndex: 9999,
+    };
+    
+    // Bounds account for navbar and footer visible heights
+    const maxH = window.innerHeight - bounds.top - (window.innerHeight - bounds.bottom) - 20;
+    style.maxHeight = `${Math.max(300, maxH)}px`;
+    style.height = `${Math.min(520, Math.max(300, maxH))}px`;
+    
+    if (corner === 'top-left') {
+      style.top = `${bounds.top}px`;
+      style.left = `${bounds.left}px`;
+    } else if (corner === 'top-right') {
+      style.top = `${bounds.top}px`;
+      style.right = `${window.innerWidth - bounds.right}px`;
+    } else if (corner === 'bottom-left') {
+      style.bottom = `${window.innerHeight - bounds.bottom}px`;
+      style.left = `${bounds.left}px`;
+    } else { // bottom-right
+      style.bottom = `${window.innerHeight - bounds.bottom}px`;
+      style.right = `${window.innerWidth - bounds.right}px`;
+    }
+    
+    return style;
+  };
+
+  // Restore position on mount and relocate if overlapping/colliding
+  useEffect(() => {
+    setMounted(true);
+    
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('auri_chat_corner');
+      const validSavedCorners = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
+      
+      if (saved && validSavedCorners.includes(saved)) {
+        const corner = saved as 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+        if (isCornerValid(corner)) {
+          setSnappedCorner(corner);
+        } else {
+          // Relocate to nearest safe corner or reset to bottom-right
+          const corners: ('bottom-right' | 'bottom-left' | 'top-right' | 'top-left')[] = [
+            'bottom-right',
+            'bottom-left',
+            'top-right',
+            'top-left'
+          ];
+          const order = corners.filter(c => c !== corner);
+          order.unshift(corner);
+          
+          let foundSafe = false;
+          for (const c of order) {
+            if (isCornerValid(c)) {
+              setSnappedCorner(c);
+              localStorage.setItem('auri_chat_corner', c);
+              foundSafe = true;
+              break;
+            }
+          }
+          if (!foundSafe) {
+            setSnappedCorner('bottom-right');
+            localStorage.setItem('auri_chat_corner', 'bottom-right');
+          }
+        }
+      } else {
+        // No saved corner or corrupted, set default bottom-right
+        setSnappedCorner('bottom-right');
+        localStorage.setItem('auri_chat_corner', 'bottom-right');
+      }
+    }
+  }, []);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const rect = e.currentTarget.getBoundingClientRect();
+    dragRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      btnStartX: rect.left,
+      btnStartY: rect.top,
+      hasMoved: false
+    };
+    setCoords({ x: rect.left, y: rect.top });
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!dragRef.current.isDragging) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      dragRef.current.hasMoved = true;
+    }
+    
+    let newX = dragRef.current.btnStartX + dx;
+    let newY = dragRef.current.btnStartY + dy;
+    
+    const bounds = getSafeBounds();
+    const btnSize = 56;
+    
+    newX = Math.max(bounds.left, Math.min(newX, bounds.right - btnSize));
+    newY = Math.max(bounds.top, Math.min(newY, bounds.bottom - btnSize));
+    
+    setCoords({ x: newX, y: newY });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!dragRef.current.isDragging) return;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    dragRef.current.isDragging = false;
+    
+    if (!dragRef.current.hasMoved) {
+      setIsOpen(true);
+      setCoords(null);
+      return;
+    }
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    
+    const midX = window.innerWidth / 2;
+    const midY = window.innerHeight / 2;
+    
+    let corner: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' = 'bottom-right';
+    if (x < midX && y < midY) {
+      corner = 'top-left';
+    } else if (x >= midX && y < midY) {
+      corner = 'top-right';
+    } else if (x < midX && y >= midY) {
+      corner = 'bottom-left';
+    } else {
+      corner = 'bottom-right';
+    }
+    
+    setSnappedCorner(corner);
+    localStorage.setItem('auri_chat_corner', corner);
+    setCoords(null);
+  };
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'msg-init',
@@ -600,12 +956,27 @@ For career support, hotline support, and callback scheduling, contact:
       {/* 1. FLOATING LAUNCHER BUTTON */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-premium hover:scale-105 active:scale-95 transition-all duration-300 border border-white/10 hover:shadow-glowPurple bg-gradient-to-r from-primary to-secondary"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          style={
+            !mounted
+              ? { right: '24px', bottom: '24px', touchAction: 'none' }
+              : coords 
+                ? { left: `${coords.x}px`, top: `${coords.y}px`, touchAction: 'none' } 
+                : { 
+                    left: `${getCornerCoords(snappedCorner).x}px`, 
+                    top: `${getCornerCoords(snappedCorner).y}px`, 
+                    touchAction: 'none' 
+                  }
+          }
+          className={`z-[9999] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-premium hover:scale-105 active:scale-95 border border-white/10 hover:shadow-glowPurple bg-gradient-to-r from-primary to-secondary select-none fixed ${
+            !mounted || coords ? '' : 'transition-all duration-300'
+          }`}
           title="Chat with Auri AI"
         >
-          <Bot className="w-6 h-6 animate-float" />
-          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+          <Bot className="w-6 h-6 animate-float pointer-events-none" />
+          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 pointer-events-none">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-500 border-2 border-white"></span>
           </span>
@@ -618,7 +989,8 @@ For career support, hotline support, and callback scheduling, contact:
           onDragOver={activeTab === 'chat' ? handleDragOver : undefined}
           onDragLeave={activeTab === 'chat' ? handleDragLeave : undefined}
           onDrop={activeTab === 'chat' ? handleDrop : undefined}
-          className="floating-chatbot border border-borderLight shadow-2xl bg-white flex flex-col relative animate-fade-up"
+          style={getChatWindowStyle(snappedCorner)}
+          className="floating-chatbot border border-borderLight shadow-2xl bg-white flex flex-col fixed animate-fade-up"
         >
           
           {/* Main Chat Drag & Drop Overlay */}

@@ -115,15 +115,16 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
   return (
     <>
       {/* Spacer to prevent page content from clipping behind header */}
-      <div className="w-full h-20" />
+      <div className="w-full h-14 lg:h-20" />
       
       {/* ─── STICKY HEADER ─── */}
       <nav 
+        id="main-navbar"
         className={`fixed top-0 left-0 w-full z-50 bg-white border-b border-borderLight transition-all duration-300 flex items-center ${
-          isScrolled ? 'h-16 shadow-soft' : 'h-20'
+          isScrolled ? 'h-14 lg:h-16 shadow-soft' : 'h-14 lg:h-20'
         }`}
       >
-        <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 xl:gap-6">
+        <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4 lg:gap-6">
           
           {/* Logo & Brand Name */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 select-none group" aria-label="Aurenza">
@@ -249,10 +250,10 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
           </ul>
 
           {/* Right Action Section */}
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             
             {/* Compact Search Bar (hidden on lg desktops to avoid menu wrapping, shown on md tablets and xl wide screens) */}
-            <form onSubmit={handleSearchSubmit} className="hidden md:flex lg:hidden xl:flex items-center bg-sectionBg border border-borderLight rounded-badge px-3 py-1.5 w-32 xl:w-44 focus-within:ring-2 focus-within:ring-primary/10 transition">
+            <form id="nav-search-form" onSubmit={handleSearchSubmit} className="hidden md:flex lg:hidden xl:flex items-center bg-sectionBg border border-borderLight rounded-badge px-3 py-1.5 w-32 xl:w-44 focus-within:ring-2 focus-within:ring-primary/10 transition">
               <Search className="w-3.5 h-3.5 text-[#8A8A9A] mr-2 shrink-0" />
               <input
                 type="text"
@@ -320,6 +321,7 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
               <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
                 {/* Secondary Button: login */}
                 <Link
+                  id="admin-portal-btn"
                   href="/login"
                   className="h-9 px-3 xl:px-4 rounded-btn border border-primary text-primary hover:bg-purple-50/20 font-bold text-[11px] inline-flex items-center justify-center transition shrink-0 whitespace-nowrap"
                 >
@@ -328,6 +330,7 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
 
                 {/* Primary Gradient Button: Join Immediately */}
                 <button
+                  id="join-immediately-btn"
                   type="button"
                   onClick={openConsultationModal}
                   className="h-9 px-4 xl:px-5 rounded-btn bg-brand-gradient text-white font-bold text-[11px] inline-flex items-center justify-center transition hover:opacity-90 hover:shadow-soft shrink-0 whitespace-nowrap"

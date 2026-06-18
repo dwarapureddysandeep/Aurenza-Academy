@@ -86,7 +86,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-[85vh] bg-white overflow-hidden py-16 lg:py-[100px] flex items-center">
+    <section className="relative min-h-0 lg:min-h-[85vh] bg-white overflow-hidden pt-4 pb-12 lg:py-[100px] flex items-start lg:items-center">
       
       {/* Decorative gradient blobs */}
       <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-primary/5 rounded-full filter blur-[100px] pointer-events-none"></div>
@@ -97,7 +97,7 @@ export default function HeroSection() {
           
           {/* ════════════════════ LEFT SIDE (Content) ════════════════════ */}
           <motion.div 
-            className="lg:col-span-7 space-y-8 flex flex-col justify-center"
+            className="lg:col-span-7 space-y-5 lg:space-y-8 flex flex-col justify-center"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -173,11 +173,11 @@ export default function HeroSection() {
           </motion.div>
 
           {/* ════════════════════ RIGHT SIDE (Visual) ════════════════════ */}
-          <div className="lg:col-span-5 relative flex justify-center items-center mt-12 lg:mt-0 select-none">
+          <div className="lg:col-span-5 relative flex justify-center items-center mt-6 lg:mt-0 select-none">
             
             {/* Visual Area Illustration */}
             <motion.div
-              className="relative w-full max-w-md mx-auto"
+              className="relative w-full max-w-[280px] sm:max-w-sm lg:max-w-md mx-auto"
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
@@ -192,15 +192,15 @@ export default function HeroSection() {
               
               {/* Card 1: 5000+ Learners (Top Right) */}
               <FloatingCard
-                className="absolute -top-6 -right-4 w-44 shadow-soft"
+                className="absolute -top-4 -right-2 sm:-top-6 sm:-right-4 w-32 sm:w-44 shadow-soft p-2.5 sm:p-4"
                 floatDuration={4}
                 delay={0.4}
               >
-                <div className="text-center space-y-1">
-                  <h4 className="text-2xl font-heading font-extrabold text-primary leading-none">
+                <div className="text-center space-y-0.5 sm:space-y-1">
+                  <h4 className="text-lg sm:text-2xl font-heading font-extrabold text-primary leading-none">
                     {learnersCount}+
                   </h4>
-                  <p className="text-[10px] uppercase font-bold tracking-wider text-[#8A8A9A]">
+                  <p className="text-[8px] sm:text-[10px] uppercase font-bold tracking-wider text-[#8A8A9A]">
                     Active Learners
                   </p>
                 </div>
@@ -208,15 +208,15 @@ export default function HeroSection() {
 
               {/* Card 2: 100+ Courses (Left Middle) */}
               <FloatingCard
-                className="absolute top-1/2 -translate-y-1/2 -left-8 w-40 shadow-soft"
+                className="absolute top-1/2 -translate-y-1/2 -left-3 sm:-left-8 w-28 sm:w-40 shadow-soft p-2.5 sm:p-4"
                 floatDuration={3.5}
                 delay={0.7}
               >
-                <div className="text-center space-y-1">
-                  <h4 className="text-2xl font-heading font-extrabold text-secondary leading-none">
+                <div className="text-center space-y-0.5 sm:space-y-1">
+                  <h4 className="text-lg sm:text-2xl font-heading font-extrabold text-secondary leading-none">
                     {coursesCount}+
                   </h4>
-                  <p className="text-[10px] uppercase font-bold tracking-wider text-[#8A8A9A]">
+                  <p className="text-[8px] sm:text-[10px] uppercase font-bold tracking-wider text-[#8A8A9A]">
                     Elite Courses
                   </p>
                 </div>
@@ -224,15 +224,15 @@ export default function HeroSection() {
 
               {/* Card 3: 50+ Trainers (Bottom Right) */}
               <FloatingCard
-                className="absolute -bottom-6 right-2 w-40 shadow-soft"
+                className="absolute -bottom-4 right-1 sm:-bottom-6 sm:right-2 w-28 sm:w-40 shadow-soft p-2.5 sm:p-4"
                 floatDuration={4.5}
                 delay={1}
               >
-                <div className="text-center space-y-1">
-                  <h4 className="text-2xl font-heading font-extrabold text-primary leading-none">
+                <div className="text-center space-y-0.5 sm:space-y-1">
+                  <h4 className="text-lg sm:text-2xl font-heading font-extrabold text-primary leading-none">
                     {trainersCount}+
                   </h4>
-                  <p className="text-[10px] uppercase font-bold tracking-wider text-[#8A8A9A]">
+                  <p className="text-[8px] sm:text-[10px] uppercase font-bold tracking-wider text-[#8A8A9A]">
                     Expert Trainers
                   </p>
                 </div>

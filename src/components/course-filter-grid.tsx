@@ -218,6 +218,10 @@ export default function CourseFilterGrid({
                     <img
                       src={course.image}
                       alt={course.name}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "/images/course-placeholder.jpg";
+                      }}
                       className="h-full w-full object-cover grayscale opacity-90 transition-all duration-500 group-hover:scale-103 group-hover:grayscale-0"
                     />
                     

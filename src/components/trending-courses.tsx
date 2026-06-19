@@ -204,6 +204,10 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                     <img 
                       src={course.image} 
                       alt={course.name}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "/images/course-placeholder.jpg";
+                      }}
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                     />
                   </Link>
@@ -368,6 +372,10 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                         <img 
                           src={c.image} 
                           alt="" 
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "/images/course-placeholder.jpg";
+                          }}
                           className="w-5 h-5 rounded-full object-cover shrink-0"
                         />
                         <span className="text-[10px] font-bold text-textPrimary truncate">{c.name}</span>
@@ -635,6 +643,10 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                               <img 
                                 src={c.image} 
                                 alt="" 
+                                onError={(e) => {
+                                  e.currentTarget.onerror = null;
+                                  e.currentTarget.src = "/images/course-placeholder.jpg";
+                                }}
                                 className="w-full h-24 object-cover rounded-card border border-borderLight"
                               />
                               <div>

@@ -199,7 +199,7 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
                                     className="group flex items-start gap-3 p-2.5 rounded-btn hover:bg-purple-50/30 transition-all duration-200"
                                   >
                                     <span className="text-xl shrink-0 mt-0.5">{course.icon}</span>
-                                    <div>
+                                    <div className="min-w-0">
                                       <h4 className="text-xs font-bold text-textPrimary group-hover:text-primary transition-colors leading-snug">
                                         {course.name}
                                       </h4>

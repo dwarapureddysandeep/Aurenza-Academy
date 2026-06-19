@@ -20,12 +20,13 @@ import {
   generateCertificateAction,
   saveNotificationSettingsAction
 } from '@/lib/actions';
+import { parseBatchData } from '@/lib/utils';
 import {
   Layers, Briefcase, PlusCircle, Award, Phone, Mail, User, Clock,
   Calendar, Sparkles, Home, BookOpen, Folder, Users, CreditCard,
   MessageSquare, FileText, Settings, Trash2, Edit, Check, X,
   Search, TrendingUp, RefreshCw, BarChart2, ShieldAlert, CheckCircle, HelpCircle, ChevronRight,
-  Bell
+  Bell, Video
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import LoadingSpinner from './loading-spinner';
@@ -110,13 +111,23 @@ export default function AdminCrmWidget({
   const [editingBatch, setEditingBatch] = useState<any | null>(null);
   const [batchForm, setBatchForm] = useState({
     id: '',
+    courseSource: 'existing', // 'existing' or 'custom'
     courseId: '',
+    customCourseName: '',
+    trainerSource: 'existing', // 'existing' or 'custom'
     trainerId: '',
+    customTrainerName: '',
+    batchType: 'Weekend', // Weekend / Weekday / Fast Track / Corporate
+    trainingMode: 'Online Classroom', // Online Classroom / Self-Paced / Corporate Training
     startDate: '',
-    timeSlot: '',
+    endDate: '',
+    timeZone: 'IST',
+    classTiming: '',
+    status: 'Upcoming', // Upcoming / Ongoing / Completed
     seatsTotal: '30',
     seatsLeft: '30',
-    linkZoom: 'https://zoom.us/j/mock-meeting'
+    linkZoom: 'https://zoom.us/j/mock-meeting',
+    notes: ''
   });
 
   // Testimonial Form
@@ -193,7 +204,9 @@ export default function AdminCrmWidget({
       setBatchForm(prev => ({
         ...prev,
         courseId: courses[0]?.id || '',
-        trainerId: trainers[0]?.id || ''
+        trainerId: trainers[0]?.id || '',
+        customCourseName: courses[0]?.name || '',
+        customTrainerName: trainers[0]?.name || ''
       }));
     }
   }, [courses, trainers, categories]);
@@ -308,25 +321,138 @@ export default function AdminCrmWidget({
   // Batch Mutations
   const handleSaveBatch = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation
+    const courseNameInput = batchForm.courseSource === 'existing' 
+      ? courses.find(c => c.id === batchForm.courseId)?.name 
+      : batchForm.customCourseName;
+      
+    if (!courseNameInput || !courseNameInput.trim()) {
+      toast.error("Please specify a course name.");
+      return;
+    }
+
+    const trainerNameInput = batchForm.trainerSource === 'existing'
+      ? trainers.find(t => t.id === batchForm.trainerId)?.name
+      : batchForm.customTrainerName;
+      
+    if (!trainerNameInput || !trainerNameInput.trim()) {
+      toast.error("Please specify a trainer name.");
+      return;
+    }
+
+    if (!batchForm.startDate || !batchForm.classTiming) {
+      toast.error("Start date and class timing slots are required.");
+      return;
+    }
+
     toast.loading("Scheduling live batch time slot...", { id: "action" });
-    const res = await saveBatchAction(batchForm);
+    
+    const timeSlotJson = JSON.stringify({
+      courseSource: batchForm.courseSource,
+      customCourseName: batchForm.customCourseName,
+      trainerSource: batchForm.trainerSource,
+      customTrainerName: batchForm.customTrainerName,
+      batchType: batchForm.batchType,
+      trainingMode: batchForm.trainingMode,
+      startDate: batchForm.startDate,
+      endDate: batchForm.endDate,
+      timeZone: batchForm.timeZone,
+      classTiming: batchForm.classTiming,
+      status: batchForm.status,
+      notes: batchForm.notes
+    });
+
+    const payload = {
+      id: batchForm.id,
+      courseId: batchForm.courseSource === 'existing' ? batchForm.courseId : (courses[0]?.id || ''),
+      trainerId: batchForm.trainerSource === 'existing' ? batchForm.trainerId : (trainers[0]?.id || ''),
+      startDate: batchForm.startDate,
+      timeSlot: timeSlotJson,
+      seatsTotal: batchForm.seatsTotal,
+      seatsLeft: batchForm.seatsLeft,
+      linkZoom: batchForm.linkZoom
+    };
+
+    const res = await saveBatchAction(payload);
     if (res.success) {
       toast.success("Live cohort registered!", { id: "action" });
       setEditingBatch(null);
       setBatchForm({
         id: '',
+        courseSource: 'existing',
         courseId: courses[0]?.id || '',
+        customCourseName: courses[0]?.name || '',
+        trainerSource: 'existing',
         trainerId: trainers[0]?.id || '',
+        customTrainerName: trainers[0]?.name || '',
+        batchType: 'Weekend',
+        trainingMode: 'Online Classroom',
         startDate: '',
-        timeSlot: '',
+        endDate: '',
+        timeZone: 'IST',
+        classTiming: '',
+        status: 'Upcoming',
         seatsTotal: '30',
         seatsLeft: '30',
-        linkZoom: 'https://zoom.us/j/mock-meeting'
+        linkZoom: 'https://zoom.us/j/mock-meeting',
+        notes: ''
       });
       router.refresh();
     } else {
       toast.error(res.error || "Failed to save batch.", { id: "action" });
     }
+  };
+
+  const handleEditClick = (b: any) => {
+    const parsed = parseBatchData(b, courses, trainers);
+    setEditingBatch(b.id);
+    setBatchForm({
+      id: b.id,
+      courseSource: parsed.courseSource,
+      courseId: b.courseId,
+      customCourseName: parsed.courseName,
+      trainerSource: parsed.trainerSource,
+      trainerId: b.trainerId,
+      customTrainerName: parsed.trainerName,
+      batchType: parsed.batchType,
+      trainingMode: parsed.trainingMode,
+      startDate: parsed.startDate,
+      endDate: parsed.endDate,
+      timeZone: parsed.timeZone,
+      classTiming: parsed.classTiming,
+      status: parsed.status,
+      seatsTotal: b.seatsTotal.toString(),
+      seatsLeft: b.seatsLeft.toString(),
+      linkZoom: b.linkZoom,
+      notes: parsed.notes
+    });
+  };
+
+  const handleDuplicateClick = (b: any) => {
+    const parsed = parseBatchData(b, courses, trainers);
+    setEditingBatch('new');
+    setBatchForm({
+      id: '',
+      courseSource: parsed.courseSource,
+      courseId: b.courseId,
+      customCourseName: parsed.courseSource === 'custom' ? `${parsed.courseName} (Copy)` : parsed.courseName,
+      trainerSource: parsed.trainerSource,
+      trainerId: b.trainerId,
+      customTrainerName: parsed.trainerName,
+      batchType: parsed.batchType,
+      trainingMode: parsed.trainingMode,
+      startDate: parsed.startDate,
+      endDate: parsed.endDate,
+      timeZone: parsed.timeZone,
+      classTiming: parsed.classTiming,
+      status: parsed.status,
+      seatsTotal: b.seatsTotal.toString(),
+      seatsLeft: b.seatsLeft.toString(),
+      linkZoom: b.linkZoom,
+      notes: parsed.notes
+    });
+    toast.success("Batch details duplicated! Review and save.", { id: "action" });
   };
 
   const handleDeleteBatch = async (id: string) => {
@@ -1242,13 +1368,23 @@ export default function AdminCrmWidget({
                     setEditingBatch('new');
                     setBatchForm({
                       id: '',
+                      courseSource: 'existing',
                       courseId: courses[0]?.id || '',
+                      customCourseName: courses[0]?.name || '',
+                      trainerSource: 'existing',
                       trainerId: trainers[0]?.id || '',
+                      customTrainerName: trainers[0]?.name || '',
+                      batchType: 'Weekend',
+                      trainingMode: 'Online Classroom',
                       startDate: '',
-                      timeSlot: '',
+                      endDate: '',
+                      timeZone: 'IST',
+                      classTiming: '',
+                      status: 'Upcoming',
                       seatsTotal: '30',
                       seatsLeft: '30',
-                      linkZoom: 'https://zoom.us/j/mock-meeting'
+                      linkZoom: 'https://zoom.us/j/mock-meeting',
+                      notes: ''
                     });
                   }}
                   className="px-4 py-2 bg-primary text-white text-xs font-black rounded-xl hover:bg-primaryHover transition flex items-center gap-1.5 shadow-soft"
@@ -1259,43 +1395,223 @@ export default function AdminCrmWidget({
             </div>
 
             {editingBatch ? (
-              <form onSubmit={handleSaveBatch} className="space-y-4 bg-sectionBg border border-borderLight p-6 rounded-2xl animate-fade-up">
+              <form onSubmit={handleSaveBatch} className="space-y-5 bg-white border border-borderLight p-6 rounded-2xl animate-fade-up shadow-soft text-textPrimary">
                 <div className="flex justify-between items-center border-b border-borderLight pb-3 mb-2">
-                  <h4 className="text-xs font-black uppercase text-primary tracking-wider">
+                  <h4 className="text-xs font-black uppercase text-primary tracking-wider flex items-center gap-1.5">
+                    <Calendar className="w-4.5 h-4.5 text-primary" />
                     {editingBatch === 'new' ? 'Create Upcoming Live Batch' : 'Modify Live Schedule'}
                   </h4>
-                  <button type="button" onClick={() => setEditingBatch(null)} className="p-1 rounded-full hover:bg-white text-textSecondary transition">
+                  <button type="button" onClick={() => setEditingBatch(null)} className="p-1 rounded-full hover:bg-neutral-100 text-textSecondary transition">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 text-xs">
+                <div className="grid gap-5 sm:grid-cols-2 text-xs">
+                  {/* Course Source Selector */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Select Course Program</label>
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Course Source</label>
+                    <div className="flex gap-4 items-center h-10 px-1">
+                      <label className="flex items-center gap-2 font-bold cursor-pointer text-textSecondary hover:text-textPrimary">
+                        <input
+                          type="radio"
+                          name="courseSource"
+                          value="existing"
+                          checked={batchForm.courseSource === 'existing'}
+                          onChange={() => {
+                            const defaultCourse = courses[0];
+                            setBatchForm(prev => ({ 
+                              ...prev, 
+                              courseSource: 'existing',
+                              courseId: defaultCourse?.id || '',
+                              customCourseName: defaultCourse?.name || ''
+                            }));
+                          }}
+                          className="w-3.5 h-3.5 text-primary focus:ring-primary/20 accent-primary"
+                        />
+                        Existing Course
+                      </label>
+                      <label className="flex items-center gap-2 font-bold cursor-pointer text-textSecondary hover:text-textPrimary">
+                        <input
+                          type="radio"
+                          name="courseSource"
+                          value="custom"
+                          checked={batchForm.courseSource === 'custom'}
+                          onChange={() => {
+                            setBatchForm(prev => ({ 
+                              ...prev, 
+                              courseSource: 'custom',
+                              courseId: '',
+                              customCourseName: ''
+                            }));
+                          }}
+                          className="w-3.5 h-3.5 text-primary focus:ring-primary/20 accent-primary"
+                        />
+                        Custom Course (Manual Entry)
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Select Course Program (dropdown) */}
+                  <div className="flex flex-col gap-1.5">
+                    {batchForm.courseSource === 'existing' ? (
+                      <>
+                        <label className="font-bold text-textSecondary uppercase tracking-wide">Select Course Program</label>
+                        <select
+                          value={batchForm.courseId}
+                          onChange={(e) => {
+                            const cid = e.target.value;
+                            const course = courses.find(c => c.id === cid);
+                            setBatchForm(prev => ({
+                              ...prev,
+                              courseId: cid,
+                              customCourseName: course ? course.name : ''
+                            }));
+                          }}
+                          className="glass-input bg-white text-textPrimary h-10 rounded-xl"
+                        >
+                          {courses.map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      </>
+                    ) : (
+                      // Visual spacing placeholder to keep layout structured side by side
+                      <div className="hidden sm:block"></div>
+                    )}
+                  </div>
+
+                  {/* Course Name (Editable text input) */}
+                  <div className="flex flex-col gap-1.5 col-span-2">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">
+                      Course Name {batchForm.courseSource === 'existing' && <span className="text-[10px] text-neutral-400 font-normal lowercase">(auto-populated, manually editable)</span>}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={batchForm.customCourseName}
+                      onChange={(e) => setBatchForm(prev => ({ ...prev, customCourseName: e.target.value }))}
+                      placeholder="Enter custom course name, e.g. Certified Scrum Product Owner (CSPO)"
+                      className="glass-input h-10"
+                    />
+                  </div>
+
+                  {/* Trainer Source Selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Trainer Source</label>
+                    <div className="flex gap-4 items-center h-10 px-1">
+                      <label className="flex items-center gap-2 font-bold cursor-pointer text-textSecondary hover:text-textPrimary">
+                        <input
+                          type="radio"
+                          name="trainerSource"
+                          value="existing"
+                          checked={batchForm.trainerSource === 'existing'}
+                          onChange={() => {
+                            const defaultTrainer = trainers[0];
+                            setBatchForm(prev => ({ 
+                              ...prev, 
+                              trainerSource: 'existing',
+                              trainerId: defaultTrainer?.id || '',
+                              customTrainerName: defaultTrainer?.name || ''
+                            }));
+                          }}
+                          className="w-3.5 h-3.5 text-primary focus:ring-primary/20 accent-primary"
+                        />
+                        Existing Trainer
+                      </label>
+                      <label className="flex items-center gap-2 font-bold cursor-pointer text-textSecondary hover:text-textPrimary">
+                        <input
+                          type="radio"
+                          name="trainerSource"
+                          value="custom"
+                          checked={batchForm.trainerSource === 'custom'}
+                          onChange={() => {
+                            setBatchForm(prev => ({ 
+                              ...prev, 
+                              trainerSource: 'custom',
+                              trainerId: '',
+                              customTrainerName: ''
+                            }));
+                          }}
+                          className="w-3.5 h-3.5 text-primary focus:ring-primary/20 accent-primary"
+                        />
+                        Custom Trainer Name
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Select Trainer (dropdown) */}
+                  <div className="flex flex-col gap-1.5">
+                    {batchForm.trainerSource === 'existing' ? (
+                      <>
+                        <label className="font-bold text-textSecondary uppercase tracking-wide">Select Assigned Tutor (Trainer)</label>
+                        <select
+                          value={batchForm.trainerId}
+                          onChange={(e) => {
+                            const tid = e.target.value;
+                            const trainer = trainers.find(t => t.id === tid);
+                            setBatchForm(prev => ({
+                              ...prev,
+                              trainerId: tid,
+                              customTrainerName: trainer ? trainer.name : ''
+                            }));
+                          }}
+                          className="glass-input bg-white text-textPrimary h-10 rounded-xl"
+                        >
+                          {trainers.map(t => (
+                            <option key={t.id} value={t.id}>{t.name} ({t.email})</option>
+                          ))}
+                        </select>
+                      </>
+                    ) : (
+                      // Visual spacing placeholder
+                      <div className="hidden sm:block"></div>
+                    )}
+                  </div>
+
+                  {/* Trainer Name (Editable text input) */}
+                  <div className="flex flex-col gap-1.5 col-span-2">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">
+                      Trainer Name {batchForm.trainerSource === 'existing' && <span className="text-[10px] text-neutral-400 font-normal lowercase">(auto-populated, manually editable)</span>}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={batchForm.customTrainerName}
+                      onChange={(e) => setBatchForm(prev => ({ ...prev, customTrainerName: e.target.value }))}
+                      placeholder="Enter custom trainer name, e.g. Zuzana Sochova"
+                      className="glass-input h-10"
+                    />
+                  </div>
+
+                  {/* Batch Type & Training Mode */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Batch Type</label>
                     <select
-                      value={batchForm.courseId}
-                      onChange={(e) => setBatchForm(prev => ({ ...prev, courseId: e.target.value }))}
-                      className="glass-input bg-white text-textPrimary"
+                      value={batchForm.batchType}
+                      onChange={(e) => setBatchForm(prev => ({ ...prev, batchType: e.target.value }))}
+                      className="glass-input bg-white text-textPrimary h-10 rounded-xl"
                     >
-                      {courses.map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
+                      <option value="Weekend">Weekend Batch</option>
+                      <option value="Weekday">Weekday Batch</option>
+                      <option value="Fast Track">Fast Track</option>
+                      <option value="Corporate">Corporate</option>
                     </select>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Select Assigned Tutor (Trainer)</label>
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Training Mode</label>
                     <select
-                      value={batchForm.trainerId}
-                      onChange={(e) => setBatchForm(prev => ({ ...prev, trainerId: e.target.value }))}
-                      className="glass-input bg-white text-textPrimary"
+                      value={batchForm.trainingMode}
+                      onChange={(e) => setBatchForm(prev => ({ ...prev, trainingMode: e.target.value }))}
+                      className="glass-input bg-white text-textPrimary h-10 rounded-xl"
                     >
-                      {trainers.map(t => (
-                        <option key={t.id} value={t.id}>{t.name} ({t.email})</option>
-                      ))}
+                      <option value="Online Classroom">Online Classroom</option>
+                      <option value="Self-Paced">Self-Paced</option>
+                      <option value="Corporate Training">Corporate Training</option>
                     </select>
                   </div>
 
+                  {/* Start Date, End Date, Time Zone */}
                   <div className="flex flex-col gap-1.5">
                     <label className="font-bold text-textSecondary uppercase tracking-wide">Start Date</label>
                     <input
@@ -1303,31 +1619,69 @@ export default function AdminCrmWidget({
                       required
                       value={batchForm.startDate}
                       onChange={(e) => setBatchForm(prev => ({ ...prev, startDate: e.target.value }))}
-                      placeholder="e.g. 10 July"
-                      className="glass-input"
+                      placeholder="e.g. Jun 20, 2026"
+                      className="glass-input h-10"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Lecture Timings</label>
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">End Date</label>
+                    <input
+                      type="text"
+                      value={batchForm.endDate}
+                      onChange={(e) => setBatchForm(prev => ({ ...prev, endDate: e.target.value }))}
+                      placeholder="e.g. Jun 21, 2026"
+                      className="glass-input h-10"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Time Zone</label>
                     <input
                       type="text"
                       required
-                      value={batchForm.timeSlot}
-                      onChange={(e) => setBatchForm(prev => ({ ...prev, timeSlot: e.target.value }))}
-                      placeholder="e.g. 7 PM – 9 PM"
-                      className="glass-input"
+                      value={batchForm.timeZone}
+                      onChange={(e) => setBatchForm(prev => ({ ...prev, timeZone: e.target.value }))}
+                      placeholder="e.g. IST, EST, UTC"
+                      className="glass-input h-10"
                     />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Class Timing</label>
+                    <input
+                      type="text"
+                      required
+                      value={batchForm.classTiming}
+                      onChange={(e) => setBatchForm(prev => ({ ...prev, classTiming: e.target.value }))}
+                      placeholder="e.g. 04:30 PM - 12:30 AM"
+                      className="glass-input h-10"
+                    />
+                  </div>
+
+                  {/* Batch Status, Seats Total, Seats Available */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Batch Status</label>
+                    <select
+                      value={batchForm.status}
+                      onChange={(e) => setBatchForm(prev => ({ ...prev, status: e.target.value }))}
+                      className="glass-input bg-white text-textPrimary h-10 rounded-xl"
+                    >
+                      <option value="Upcoming">Upcoming</option>
+                      <option value="Ongoing">Ongoing</option>
+                      <option value="Completed">Completed</option>
+                    </select>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
                     <label className="font-bold text-textSecondary uppercase tracking-wide">Seats Total</label>
                     <input
                       type="number"
+                      required
                       value={batchForm.seatsTotal}
                       onChange={(e) => setBatchForm(prev => ({ ...prev, seatsTotal: e.target.value }))}
                       placeholder="e.g. 30"
-                      className="glass-input"
+                      className="glass-input h-10"
                     />
                   </div>
 
@@ -1335,21 +1689,33 @@ export default function AdminCrmWidget({
                     <label className="font-bold text-textSecondary uppercase tracking-wide">Seats Available (Left)</label>
                     <input
                       type="number"
+                      required
                       value={batchForm.seatsLeft}
                       onChange={(e) => setBatchForm(prev => ({ ...prev, seatsLeft: e.target.value }))}
                       placeholder="e.g. 30"
-                      className="glass-input"
+                      className="glass-input h-10"
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5 col-span-2">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Zoom Meeting URL</label>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Meeting URL (Optional)</label>
                     <input
                       type="text"
                       value={batchForm.linkZoom}
                       onChange={(e) => setBatchForm(prev => ({ ...prev, linkZoom: e.target.value }))}
-                      placeholder="https://zoom.us/j/..."
-                      className="glass-input"
+                      placeholder="e.g. https://zoom.us/j/mock-meeting"
+                      className="glass-input h-10"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 col-span-2">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Notes (Optional)</label>
+                    <textarea
+                      value={batchForm.notes}
+                      onChange={(e) => setBatchForm(prev => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Enter internal notes, course syllabus highlights, special requests, etc."
+                      rows={3}
+                      className="glass-input p-3 resize-none rounded-xl"
                     />
                   </div>
                 </div>
@@ -1358,86 +1724,132 @@ export default function AdminCrmWidget({
                   <button
                     type="button"
                     onClick={() => setEditingBatch(null)}
-                    className="px-4 py-2 border border-borderLight hover:bg-white text-textPrimary font-bold rounded-xl text-xs transition"
+                    className="px-4 py-2 border border-borderLight hover:bg-neutral-50 text-textPrimary font-bold rounded-xl text-xs transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 bg-primary text-white hover:bg-primaryHover font-black rounded-xl text-xs transition shadow-soft"
+                    className="px-5 py-2.5 bg-primary hover:bg-primaryHover text-white font-black rounded-xl text-xs transition shadow-soft hover:shadow-glowPurple"
                   >
                     Save Schedule
                   </button>
                 </div>
               </form>
             ) : (
-              <div className="grid gap-5 sm:grid-cols-2">
-                {batches.map((b) => {
-                  const course = courses.find(c => c.id === b.courseId);
-                  const trainer = trainers.find(t => t.id === b.trainerId);
-                  return (
-                    <div key={b.id} className="bg-white border border-borderLight p-5 rounded-2xl shadow-soft flex flex-col justify-between hover:shadow-premium transition">
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <span className="text-[8px] font-black text-primary uppercase tracking-wider block">Live Cohort Batch</span>
-                            <h4 className="text-xs font-black text-textPrimary heading mt-1">{course ? course.name : "Syllabus Program"}</h4>
-                          </div>
-                          <span className="px-2.5 py-0.5 rounded-full bg-blue-500/5 text-blue-500 border border-blue-500/10 text-[8px] font-bold">
-                            {b.startDate}
-                          </span>
-                        </div>
+              <div className="bg-white border border-borderLight rounded-2xl overflow-hidden shadow-soft">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-borderLight bg-sectionBg/70 text-textPrimary font-bold uppercase text-[9px] tracking-wider">
+                        <th className="p-4.5 font-black">Course Name</th>
+                        <th className="p-4.5 font-black">Trainer</th>
+                        <th className="p-4.5 font-black">Dates</th>
+                        <th className="p-4.5 font-black">Timing</th>
+                        <th className="p-4.5 font-black">Batch Type</th>
+                        <th className="p-4.5 font-black">Status</th>
+                        <th className="p-4.5 text-right font-black">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-borderLight text-[11px] text-textSecondary font-semibold">
+                      {batches.length > 0 ? (
+                        batches.map((b) => {
+                          const parsed = parseBatchData(b, courses, trainers);
+                          const isUpcoming = parsed.status === 'Upcoming';
+                          const isOngoing = parsed.status === 'Ongoing';
+                          
+                          return (
+                            <tr key={b.id} className="hover:bg-sectionBg/30 transition duration-200">
+                              <td className="p-4.5">
+                                <div className="flex flex-col">
+                                  <strong className="text-textPrimary font-extrabold">{parsed.courseName}</strong>
+                                  <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider mt-0.5">{parsed.categoryName}</span>
+                                </div>
+                              </td>
+                              <td className="p-4.5 text-textPrimary">
+                                <div className="flex flex-col">
+                                  <span className="font-bold">{parsed.trainerName}</span>
+                                  <span className="text-[9px] text-neutral-400">{parsed.trainerSpecialty}</span>
+                                </div>
+                              </td>
+                              <td className="p-4.5 text-textPrimary whitespace-nowrap">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                                  <span>
+                                    {parsed.startDate}
+                                    {parsed.endDate ? ` - ${parsed.endDate}` : ''}
+                                    {parsed.timeZone ? ` (${parsed.timeZone})` : ''}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="p-4.5 text-textPrimary whitespace-nowrap">
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                                  <span>{parsed.classTiming}</span>
+                                </div>
+                              </td>
+                              <td className="p-4.5">
+                                <span className="px-2 py-0.5 rounded bg-purple-50 text-primary border border-primary/10 text-[9px] font-bold">
+                                  {parsed.batchType}
+                                </span>
+                              </td>
+                              <td className="p-4.5">
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold border ${
+                                  isOngoing 
+                                    ? 'bg-successGreen/5 border-successGreen/20 text-[#008556]'
+                                    : isUpcoming
+                                      ? 'bg-blue-50 border-blue-100 text-blue-600'
+                                      : 'bg-neutral-100 border-neutral-200 text-neutral-500'
+                                }`}>
+                                  {parsed.status}
+                                </span>
+                              </td>
+                              <td className="p-4.5 text-right whitespace-nowrap">
+                                <div className="inline-flex gap-1.5">
+                                  {/* Edit */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEditClick(b)}
+                                    className="p-1.5 border border-borderLight hover:border-primary hover:text-primary rounded-lg transition"
+                                    title="Edit Batch"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                  
+                                  {/* Duplicate */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDuplicateClick(b)}
+                                    className="p-1.5 border border-borderLight hover:border-primary hover:text-primary rounded-lg transition"
+                                    title="Duplicate Batch"
+                                  >
+                                    <PlusCircle className="w-3.5 h-3.5 text-primary" />
+                                  </button>
 
-                        <div className="grid grid-cols-2 gap-3 text-[10px] text-textSecondary bg-sectionBg border border-borderLight p-3 rounded-xl">
-                          <div>
-                            <span className="text-[8px] font-extrabold block text-textSecondary uppercase tracking-wide">Trainer</span>
-                            <strong className="text-textPrimary mt-0.5 block">{trainer ? trainer.name : "Rahul Sharma"}</strong>
-                          </div>
-                          <div>
-                            <span className="text-[8px] font-extrabold block text-textSecondary uppercase tracking-wide">Timing Slot</span>
-                            <strong className="text-textPrimary mt-0.5 block flex items-center gap-1 font-semibold">
-                              <Clock className="w-3.5 h-3.5 text-primary shrink-0" /> {b.timeSlot}
-                            </strong>
-                          </div>
-                        </div>
-
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="font-bold text-textSecondary">Enrollment Seats:</span>
-                          <span className="font-extrabold text-primary uppercase tracking-wider text-[9px]">
-                            {b.seatsLeft} / {b.seatsTotal} Free
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 border-t border-borderLight pt-4 mt-4 text-[10px] font-bold">
-                        <button
-                          onClick={() => {
-                            setEditingBatch(b.id);
-                            setBatchForm({
-                              id: b.id,
-                              courseId: b.courseId,
-                              trainerId: b.trainerId,
-                              startDate: b.startDate,
-                              timeSlot: b.timeSlot,
-                              seatsTotal: b.seatsTotal.toString(),
-                              seatsLeft: b.seatsLeft.toString(),
-                              linkZoom: b.linkZoom
-                            });
-                          }}
-                          className="flex-1 py-2 border border-borderLight hover:border-primary hover:text-primary rounded-xl text-center transition flex items-center justify-center gap-1"
-                        >
-                          <Edit className="w-3.5 h-3.5" /> Reschedule
-                        </button>
-                        <button
-                          onClick={() => handleDeleteBatch(b.id)}
-                          className="p-2 border border-borderLight hover:border-dangerRed hover:text-dangerRed rounded-xl transition text-center"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                                  {/* Delete */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteBatch(b.id)}
+                                    className="p-1.5 border border-borderLight hover:border-dangerRed hover:text-dangerRed rounded-lg transition"
+                                    title="Delete Batch"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 text-dangerRed" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={7} className="p-10 text-center text-textSecondary font-bold">
+                            No batches scheduled. Click "Create Cohort Batch" to schedule a slot.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

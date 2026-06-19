@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import FAQAccordion from '@/components/faq-accordion';
 import CourseActionsWidget from '@/components/course-actions-widget';
 import ReserveSeatButton from '@/components/reserve-seat-button';
+import { parseBatchData } from '@/lib/utils';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -308,28 +309,35 @@ export default async function CourseDetailPage({ params }: PageProps) {
                 </thead>
                 <tbody className="divide-y divide-borderLight text-xs text-textSecondary">
                   {batches.length > 0 ? (
-                    batches.map((batch: any) => (
-                      <tr key={batch.id} className="hover:bg-sectionBg/40 transition duration-200">
-                        <td className="p-5 font-extrabold text-textPrimary heading flex items-center gap-2.5">
-                          <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shrink-0"></div>
-                          {batch.startDate}
-                        </td>
-                        <td className="p-5 font-semibold text-textPrimary">{batch.timeSlot}</td>
-                        <td className="p-5 font-bold text-textPrimary uppercase tracking-wider text-[10px] text-primary">Weekend Live Cohort</td>
-                        <td className="p-5 text-center">
-                          <span className="px-2.5 py-1 rounded-full bg-primary/5 text-primary font-bold text-[10px] tracking-wider uppercase border border-primary/10">
-                            {batch.seatsLeft} Seats Left
-                          </span>
-                        </td>
-                        <td className="p-5 text-right">
-                          <ReserveSeatButton 
-                            courseName={course.name} 
-                            startDate={batch.startDate} 
-                            timeSlot={batch.timeSlot} 
-                          />
-                        </td>
-                      </tr>
-                    ))
+                    batches.map((batch: any) => {
+                      const parsed = parseBatchData(batch, [course]);
+                      return (
+                        <tr key={batch.id} className="hover:bg-sectionBg/40 transition duration-200">
+                          <td className="p-5 font-extrabold text-textPrimary heading flex items-center gap-2.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shrink-0"></div>
+                            {parsed.startDate}
+                            {parsed.endDate ? ` - ${parsed.endDate}` : ''}
+                            {parsed.timeZone ? ` (${parsed.timeZone})` : ''}
+                          </td>
+                          <td className="p-5 font-semibold text-textPrimary">{parsed.classTiming}</td>
+                          <td className="p-5 font-bold text-textPrimary uppercase tracking-wider text-[10px] text-primary">
+                            {parsed.batchType} Live ({parsed.trainingMode})
+                          </td>
+                          <td className="p-5 text-center">
+                            <span className="px-2.5 py-1 rounded-full bg-primary/5 text-primary font-bold text-[10px] tracking-wider uppercase border border-primary/10">
+                              {batch.seatsLeft} Seats Left
+                            </span>
+                          </td>
+                          <td className="p-5 text-right">
+                            <ReserveSeatButton 
+                              courseName={parsed.courseName} 
+                              startDate={parsed.startDate} 
+                              timeSlot={parsed.classTiming} 
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
                       <td colSpan={5} className="p-10 text-center text-xs text-textSecondary font-semibold">

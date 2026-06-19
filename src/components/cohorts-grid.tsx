@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Search, Calendar, Clock, User, CheckCircle2, MessageSquare, ArrowRight, Video, GraduationCap, X } from 'lucide-react';
 import CounselingButton from './counseling-button';
+import { parseBatchData } from '@/lib/utils';
 
 interface CohortsGridProps {
   batches: any[];
@@ -18,37 +19,29 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
 
   // Filter batches
   const filteredBatches = batches.filter((batch) => {
-    const course = courses.find((c) => c.id === batch.courseId);
-    if (!course) return false;
+    const parsed = parseBatchData(batch, courses, trainers);
 
     // Search query match
     const matchesSearch = searchQuery.trim() === ''
       ? true
-      : course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
+      : parsed.courseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        parsed.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
 
     // Category filter match
     const matchesCategory = selectedCategory === 'All'
       ? true
-      : course.categoryName.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-        course.name.toLowerCase().includes(selectedCategory.toLowerCase());
+      : parsed.categoryName.toLowerCase().includes(selectedCategory.toLowerCase()) ||
+        parsed.courseName.toLowerCase().includes(selectedCategory.toLowerCase());
 
-    // Mode filter match (mocking mode based on batch or ID parity to make list dynamic)
-    const mode = parseInt(batch.id.replace(/\D/g, '') || '0') % 2 === 0 ? 'Online' : 'Offline';
+    // Mode filter match
     const matchesMode = selectedMode === 'All'
       ? true
-      : mode === selectedMode;
+      : parsed.trainingMode.toLowerCase().includes(selectedMode.toLowerCase()) ||
+        (selectedMode === 'Online' && parsed.trainingMode.toLowerCase().includes('online')) ||
+        (selectedMode === 'Offline' && !parsed.trainingMode.toLowerCase().includes('online'));
 
     return matchesSearch && matchesCategory && matchesMode;
   });
-
-  const getTrainerDetails = (trainerId: string) => {
-    const trainer = trainers.find((t) => t.id === trainerId);
-    return {
-      name: trainer ? trainer.name : 'Dr. Ramesh Kumar',
-      specialty: trainer ? trainer.specialty : 'Ex-Amazon Senior Architect'
-    };
-  };
 
   const handleWhatsAppChat = (courseName: string) => {
     if (typeof window !== 'undefined') {
@@ -135,11 +128,8 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
               </thead>
               <tbody className="divide-y divide-borderLight text-xs text-textSecondary font-semibold">
                 {filteredBatches.map((batch) => {
-                  const course = courses.find((c) => c.id === batch.courseId);
-                  if (!course) return null;
-                  const trainer = getTrainerDetails(batch.trainerId);
-                  const isEven = parseInt(batch.id.replace(/\D/g, '') || '0') % 2 === 0;
-                  const mode = isEven ? 'Online' : 'Offline';
+                  const parsed = parseBatchData(batch, courses, trainers);
+                  const isOnline = parsed.trainingMode.toLowerCase().includes('online');
 
                   return (
                     <tr key={batch.id} className="hover:bg-sectionBg/30 transition duration-200">
@@ -148,10 +138,10 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
                           <div className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0"></div>
                           <div>
                             <span className="text-[10px] text-textSecondary uppercase tracking-wider block font-bold leading-none mb-1">
-                              {course.categoryName}
+                              {parsed.categoryName}
                             </span>
                             <span className="text-xs sm:text-sm font-extrabold text-textPrimary heading block">
-                              {course.name}
+                              {parsed.courseName}
                             </span>
                           </div>
                         </div>
@@ -159,32 +149,36 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
                       <td className="p-5">
                         <div className="flex items-center gap-2 text-textPrimary">
                           <Calendar className="w-4 h-4 text-[#8A8A9A] shrink-0" />
-                          <span>{batch.startDate}</span>
+                          <span>
+                            {parsed.startDate}
+                            {parsed.endDate ? ` - ${parsed.endDate}` : ''}
+                            {parsed.timeZone ? ` (${parsed.timeZone})` : ''}
+                          </span>
                         </div>
                       </td>
                       <td className="p-5">
                         <div className="flex items-center gap-2 text-textPrimary">
                           <Clock className="w-4 h-4 text-[#8A8A9A] shrink-0" />
-                          <span>{batch.timeSlot}</span>
+                          <span>{parsed.classTiming}</span>
                         </div>
                       </td>
                       <td className="p-5">
                         <div className="flex items-center gap-2 text-textPrimary">
                           <User className="w-4 h-4 text-primary shrink-0" />
                           <div>
-                            <span className="block font-bold">{trainer.name}</span>
-                            <span className="text-[9px] text-textSecondary block font-bold">{trainer.specialty}</span>
+                            <span className="block font-bold">{parsed.trainerName}</span>
+                            <span className="text-[9px] text-textSecondary block font-bold">{parsed.trainerSpecialty}</span>
                           </div>
                         </div>
                       </td>
                       <td className="p-5">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                          mode === 'Online'
+                          isOnline
                             ? 'bg-successGreen/5 border-successGreen/20 text-[#008556]'
                             : 'bg-primary/5 border-primary/20 text-[#7A008C]'
                         }`}>
                           <Video className="w-3.5 h-3.5" />
-                          {mode === 'Online' ? 'Online Live' : 'Classroom'}
+                          {parsed.trainingMode}
                         </span>
                       </td>
                       <td className="p-5 text-center">
@@ -195,14 +189,14 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
                       <td className="p-5 text-right space-y-1.5">
                         <CounselingButton
                           source="Timetable Batches Grid"
-                          prefilledCourse={course.name}
+                          prefilledCourse={parsed.courseName}
                           className="w-full max-w-[130px] px-3.5 py-2 rounded-lg bg-primary hover:bg-primaryHover text-[10px] text-white tracking-wider uppercase transition shadow-soft font-black inline-flex justify-center"
                         >
                           Enquire Now &rarr;
                         </CounselingButton>
                         <button
                           type="button"
-                          onClick={() => handleWhatsAppChat(course.name)}
+                          onClick={() => handleWhatsAppChat(parsed.courseName)}
                           className="w-full max-w-[130px] px-3.5 py-2 rounded-lg border border-[#25D366]/20 bg-[#25D366]/5 hover:bg-[#25D366]/10 text-[#128C7E] text-[10px] font-bold tracking-wider uppercase transition inline-flex justify-center items-center gap-1"
                         >
                           <MessageSquare className="w-3 h-3 fill-current text-[#128C7E]" />
@@ -219,11 +213,8 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
           {/* Mobile Cards View */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:hidden">
             {filteredBatches.map((batch) => {
-              const course = courses.find((c) => c.id === batch.courseId);
-              if (!course) return null;
-              const trainer = getTrainerDetails(batch.trainerId);
-              const isEven = parseInt(batch.id.replace(/\D/g, '') || '0') % 2 === 0;
-              const mode = isEven ? 'Online' : 'Offline';
+              const parsed = parseBatchData(batch, courses, trainers);
+              const isOnline = parsed.trainingMode.toLowerCase().includes('online');
 
               return (
                 <div 
@@ -234,10 +225,10 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
                   <div className="flex justify-between items-start">
                     <div>
                       <span className="text-[9px] text-textSecondary uppercase tracking-widest font-black block leading-none mb-1">
-                        {course.categoryName}
+                        {parsed.categoryName}
                       </span>
                       <h4 className="text-sm font-extrabold text-textPrimary heading leading-snug">
-                        {course.name}
+                        {parsed.courseName}
                       </h4>
                     </div>
                     
@@ -252,18 +243,21 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
                       <span className="text-[9px] text-neutral-400 font-bold uppercase block tracking-wider leading-none">Start Date</span>
                       <div className="flex items-center gap-1.5 text-textPrimary">
                         <Calendar className="w-3.5 h-3.5 text-[#8A8A9A]" />
-                        <span>{batch.startDate}</span>
+                        <span>
+                          {parsed.startDate}
+                          {parsed.endDate ? ` - ${parsed.endDate}` : ''}
+                        </span>
                       </div>
                     </div>
 
                     <div className="space-y-1">
                       <span className="text-[9px] text-neutral-400 font-bold uppercase block tracking-wider leading-none">Format</span>
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold border ${
-                        mode === 'Online'
+                        isOnline
                           ? 'bg-successGreen/5 border-successGreen/25 text-[#008556]'
                           : 'bg-primary/5 border-primary/25 text-[#7A008C]'
                       }`}>
-                        {mode === 'Online' ? 'Online Live' : 'Classroom'}
+                        {parsed.trainingMode}
                       </span>
                     </div>
 
@@ -271,7 +265,7 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
                       <span className="text-[9px] text-neutral-400 font-bold uppercase block tracking-wider leading-none">Class Schedule</span>
                       <div className="flex items-center gap-1.5 text-textPrimary">
                         <Clock className="w-3.5 h-3.5 text-[#8A8A9A]" />
-                        <span>{batch.timeSlot}</span>
+                        <span>{parsed.classTiming} ({parsed.timeZone})</span>
                       </div>
                     </div>
                   </div>
@@ -280,25 +274,25 @@ export default function CohortsGrid({ batches, courses, trainers, categories }: 
                   <div className="space-y-4 pt-1">
                     <div className="flex items-center gap-2 text-xs">
                       <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black uppercase text-[10px]">
-                        RK
+                        {parsed.trainerName.substring(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <span className="block font-bold text-textPrimary text-xs">{trainer.name}</span>
-                        <span className="text-[9px] text-textSecondary block leading-none mt-0.5 font-bold">{trainer.specialty}</span>
+                        <span className="block font-bold text-textPrimary text-xs">{parsed.trainerName}</span>
+                        <span className="text-[9px] text-textSecondary block leading-none mt-0.5 font-bold">{parsed.trainerSpecialty}</span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
                       <CounselingButton
                         source="Timetable Batches Cards"
-                        prefilledCourse={course.name}
+                        prefilledCourse={parsed.courseName}
                         className="py-3 rounded-xl bg-primary hover:bg-primaryHover text-[10px] text-white tracking-wider uppercase transition shadow-soft font-black text-center flex justify-center"
                       >
                         Enquire Now
                       </CounselingButton>
                       <button
                         type="button"
-                        onClick={() => handleWhatsAppChat(course.name)}
+                        onClick={() => handleWhatsAppChat(parsed.courseName)}
                         className="py-3 rounded-xl border border-[#25D366]/20 bg-[#25D366]/5 hover:bg-[#25D366]/10 text-[#128C7E] text-[10px] font-bold tracking-wider uppercase transition flex justify-center items-center gap-1"
                       >
                         <MessageSquare className="w-3.5 h-3.5 fill-current text-[#128C7E]" />

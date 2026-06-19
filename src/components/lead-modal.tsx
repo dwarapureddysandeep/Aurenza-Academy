@@ -2,22 +2,22 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, User, Mail, Phone, GraduationCap, CheckCircle2 } from 'lucide-react';
-import { submitConsultationLead } from '@/lib/actions';
+import { submitConsultationLead, getCoursesAction } from '@/lib/actions';
 import LoadingSpinner from './loading-spinner';
 
-const COURSES_LIST = [
-  "Java Full Stack Development",
-  "Frontend Development (React & Next.js)",
-  "AI & Machine Learning Engineering",
-  "PMP (Project Management Professional)",
-  "CAPM (Certified Associate in Project Management)",
-  "PMI ACP (Agile Certified Practitioner)",
-  "CBAP (Certified Business Analysis Professional)",
-  "Data Science & Analytics",
-  "AWS Cloud Solutions",
-  "Azure DevOps Systems",
-  "Digital Marketing Mastery",
-  "Product Management Core"
+const FALLBACK_COURSES = [
+  { name: "Java Full Stack Development", categoryName: "Full Stack Development" },
+  { name: "Frontend Development (React & Next.js)", categoryName: "Full Stack Development" },
+  { name: "AI & Machine Learning Engineering", categoryName: "AI & Machine Learning" },
+  { name: "PMP (Project Management Professional)", categoryName: "Project Management" },
+  { name: "CAPM (Certified Associate in Project Management)", categoryName: "Project Management" },
+  { name: "PMI ACP (Agile Certified Practitioner)", categoryName: "Project Management" },
+  { name: "CBAP (Certified Business Analysis Professional)", categoryName: "Project Management" },
+  { name: "Data Science & Analytics", categoryName: "Data Science" },
+  { name: "AWS Cloud Solutions", categoryName: "Cloud Computing" },
+  { name: "Azure DevOps Systems", categoryName: "DevOps" },
+  { name: "Digital Marketing Mastery", categoryName: "Digital Marketing" },
+  { name: "Product Management Core", categoryName: "Project Management" }
 ];
 
 export default function LeadModal() {
@@ -29,8 +29,24 @@ export default function LeadModal() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [course, setCourse] = useState(COURSES_LIST[0]);
+  const [coursesList, setCoursesList] = useState<any[]>(FALLBACK_COURSES);
+  const [course, setCourse] = useState(FALLBACK_COURSES[0].name);
   const [message, setMessage] = useState('');
+
+  // Fetch courses from DB dynamically on mount
+  useEffect(() => {
+    async function loadCourses() {
+      try {
+        const res = await getCoursesAction();
+        if (res && res.success && res.courses && res.courses.length > 0) {
+          setCoursesList(res.courses);
+        }
+      } catch (err) {
+        console.error("Failed to load courses for lead modal:", err);
+      }
+    }
+    loadCourses();
+  }, []);
 
   // Listen to global open-lead-modal event
   useEffect(() => {
@@ -184,11 +200,27 @@ export default function LeadModal() {
                 <select
                   value={course}
                   onChange={(e) => setCourse(e.target.value)}
-                  className="glass-input text-xs sm:text-sm bg-[#0E061A] text-white"
+                  className="glass-input text-xs sm:text-sm bg-[#0E061A] text-white w-full h-10 px-3 rounded-xl border border-white/[0.08] focus:border-applePurple/50 focus:ring-1 focus:ring-applePurple/20 outline-none"
                 >
-                  {COURSES_LIST.map((c, i) => (
-                    <option key={i} value={c} className="bg-[#0E061A] text-white">{c}</option>
-                  ))}
+                  {(() => {
+                    const grouped: Record<string, any[]> = {};
+                    coursesList.forEach((c) => {
+                      const cat = c.categoryName || 'General Certifications';
+                      if (!grouped[cat]) {
+                        grouped[cat] = [];
+                      }
+                      grouped[cat].push(c);
+                    });
+                    return Object.entries(grouped).map(([category, items]) => (
+                      <optgroup key={category} label={category} className="bg-[#0E061A] text-white font-extrabold uppercase text-[10px] tracking-wider">
+                        {items.map((item, idx) => (
+                          <option key={idx} value={item.name} className="bg-[#0E061A] text-white font-normal normal-case text-xs">
+                            {item.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ));
+                  })()}
                 </select>
               </div>
 

@@ -31,6 +31,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
   // 3. Fetch general testimonials for outcomes section
   const testimonials = await db.testimonial.findMany();
+  const faqs = await db.faq.findMany({ orderBy: { order: 'asc' } });
 
   // 4. Parse syllabus and FAQs JSON arrays safely
   let syllabusItems = [];
@@ -415,7 +416,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
               ))}
             </div>
           ) : (
-            <FAQAccordion />
+            <FAQAccordion initialFaqs={faqs} />
           )}
         </div>
       </section>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, User, Mail, Phone, GraduationCap, CheckCircle2 } from 'lucide-react';
-import { submitConsultationLead, getCoursesAction } from '@/lib/actions';
+import { submitOneOnOneRequest, getCoursesAction } from '@/lib/actions';
 import LoadingSpinner from './loading-spinner';
 
 const FALLBACK_COURSES = [
@@ -77,12 +77,11 @@ export default function LeadModal() {
     if (!name || !phone || !course) return;
 
     setLoading(true);
-    const res = await submitConsultationLead({
+    const res = await submitOneOnOneRequest({
       name,
-      email,
+      email: email || '',
       phone,
-      course,
-      message: message ? `${message} (Source: ${source})` : `Enquired via: ${source}`
+      preferredTime: `${course}${message ? ' - Msg: ' + message : ''} (Source: ${source})`
     });
 
     setLoading(false);

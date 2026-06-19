@@ -61,14 +61,28 @@ function FloatingCard({ children, className = '', floatDuration = 4, delay = 0 }
   );
 }
 
-export default function HeroSection() {
+export default function HeroSection({ homepageContent = [] }: { homepageContent?: any[] }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Extract CMS values with default fallbacks
+  const getCmsValue = (section: string, key: string, defaultValue: string) => {
+    const entry = homepageContent.find(c => c.section === section && c.key === key);
+    return entry ? entry.value : defaultValue;
+  };
+
+  const title = getCmsValue('hero', 'title', 'Advance Your Career With Industry Recognized Certifications');
+  const subtitle = getCmsValue('hero', 'subtitle', 'Learn from industry experts through live instructor-led training programs.');
+  const ctaPrimary = getCmsValue('hero', 'cta-primary', 'Explore Courses');
+  const ctaSecondary = getCmsValue('hero', 'cta-secondary', 'Book Free Consultation');
+  const statsLearners = parseInt(getCmsValue('hero', 'stats-learners', '5000')) || 5000;
+  const statsCourses = parseInt(getCmsValue('hero', 'stats-courses', '100')) || 100;
+  const statsTrainers = parseInt(getCmsValue('hero', 'stats-trainers', '50')) || 50;
+
   // Stats hooks
-  const learnersCount = useCountUp(5000, 2000, 600);
-  const coursesCount = useCountUp(100, 2000, 800);
-  const trainersCount = useCountUp(50, 2000, 1000);
+  const learnersCount = useCountUp(statsLearners, 2000, 600);
+  const coursesCount = useCountUp(statsCourses, 2000, 800);
+  const trainersCount = useCountUp(statsTrainers, 2000, 1000);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +97,20 @@ export default function HeroSection() {
       const event = new CustomEvent('open-lead-modal', { detail: { source: 'Homepage Hero CTA' } });
       window.dispatchEvent(event);
     }
+  };
+
+  const renderTitle = (text: string) => {
+    if (text.includes("Industry Recognized")) {
+      const parts = text.split("Industry Recognized");
+      return (
+        <>
+          {parts[0]}
+          <span className="text-gradient-purple-pink">Industry Recognized</span>
+          {parts[1]}
+        </>
+      );
+    }
+    return text;
   };
 
   return (
@@ -104,12 +132,12 @@ export default function HeroSection() {
           >
             {/* Headline */}
             <h1 className="text-4xl md:text-5xl lg:text-[56px] font-heading font-extrabold text-[#1A1A1A] leading-[1.1] tracking-tight">
-              Advance Your Career With <span className="text-gradient-purple-pink">Industry Recognized</span> Certifications
+              {renderTitle(title)}
             </h1>
 
             {/* Subheadline */}
             <p className="text-body-lg text-[#5A5A6A] leading-relaxed font-sans max-w-xl font-medium">
-              Learn from industry experts through live instructor-led training programs.
+              {subtitle}
             </p>
 
             {/* CTA Buttons */}
@@ -119,7 +147,7 @@ export default function HeroSection() {
                 onClick={() => router.push('/courses')}
                 className="btn-primary w-full sm:w-auto h-12"
               >
-                Explore Courses
+                {ctaPrimary}
               </button>
               
               <button
@@ -127,7 +155,7 @@ export default function HeroSection() {
                 onClick={openConsultationModal}
                 className="btn-secondary w-full sm:w-auto h-12"
               >
-                Book Free Consultation
+                {ctaSecondary}
               </button>
             </div>
 

@@ -81,7 +81,24 @@ export default function CourseFilterGrid({
     'microsoft-project-2007-2010'
   ];
 
-  const sortedCourses = [...initialCourses].sort((a, b) => {
+  const categoryMap: Record<string, string> = {
+    'cat-1': 'Project Management',
+    'cat-2': 'Data Science',
+    'cat-3': 'AI & Machine Learning',
+    'cat-4': 'Cloud Computing',
+    'cat-5': 'DevOps',
+    'cat-6': 'Cyber Security',
+    'cat-7': 'Full Stack Development',
+    'cat-8': 'Digital Marketing',
+    'cat-9': 'Agile Management'
+  };
+
+  const normalizedCourses = (initialCourses || []).map(course => ({
+    ...course,
+    categoryName: course.categoryName || categoryMap[course.categoryId] || 'Professional Certification'
+  }));
+
+  const sortedCourses = [...normalizedCourses].sort((a, b) => {
     const indexA = prioritySlugs.indexOf(a.slug);
     const indexB = prioritySlugs.indexOf(b.slug);
     

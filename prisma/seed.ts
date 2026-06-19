@@ -364,6 +364,40 @@ async function main() {
     },
   });
 
+  // 12. Seed FAQs
+  console.log('[Seeder] Seeding general FAQs...');
+  const faqs = [
+    { id: "faq-1", question: "What is the training format?", answer: "The courses are delivered through live virtual interactive weekend workshops with 24/7 slack channel mentorship.", order: 1 },
+    { id: "faq-2", question: "Will I receive placement assistance?", answer: "Yes, we have over 500+ recruitment partners and offer career counseling, resume optimization, and mock interview setups.", order: 2 },
+    { id: "faq-3", question: "Are the course materials lifetime accessible?", answer: "Absolutely. All students receive lifetime credentials for class recordings, sandbox labs, and syllabus documents.", order: 3 }
+  ];
+  for (const faq of faqs) {
+    await prisma.faq.upsert({
+      where: { id: faq.id },
+      update: faq,
+      create: faq
+    });
+  }
+
+  // 13. Seed Homepage Content
+  console.log('[Seeder] Seeding homepage CMS content...');
+  const cmsEntries = [
+    { id: "cms-1", section: "hero", key: "title", value: "Advance Your Career With Industry Recognized Certifications" },
+    { id: "cms-2", section: "hero", key: "subtitle", value: "Learn from industry experts through live instructor-led training programs." },
+    { id: "cms-3", section: "hero", key: "cta-primary", value: "Explore Courses" },
+    { id: "cms-4", section: "hero", key: "cta-secondary", value: "Book Free Consultation" },
+    { id: "cms-5", section: "hero", key: "stats-learners", value: "5000" },
+    { id: "cms-6", section: "hero", key: "stats-courses", value: "100" },
+    { id: "cms-7", section: "hero", key: "stats-trainers", value: "50" }
+  ];
+  for (const entry of cmsEntries) {
+    await prisma.homepageContent.upsert({
+      where: { section_key: { section: entry.section, key: entry.key } },
+      update: { value: entry.value },
+      create: entry
+    });
+  }
+
   console.log('[Seeder] Database seeding completed successfully!');
 }
 

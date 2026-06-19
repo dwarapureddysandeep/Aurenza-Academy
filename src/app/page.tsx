@@ -20,6 +20,7 @@ export default async function HomePage() {
   const testimonials = await db.testimonial.findMany();
   const batches = await db.batch.findMany();
   const webinars = await db.webinar.findMany();
+  const homepageContent = await db.homepageContent.findMany();
 
   return (
     <div className="w-full bg-white text-textPrimary overflow-x-hidden font-sans">
@@ -27,7 +28,7 @@ export default async function HomePage() {
       {/* ==========================================
          SECTION 1: HERO SECTION (White Background - Duplicating First Screenshot)
          ========================================== */}
-      <HeroSection />
+      <HeroSection homepageContent={homepageContent} />
 
       {/* ==========================================
          NEW SECTION: POPULAR CATEGORIES (Course Discovery Section)

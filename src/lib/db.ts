@@ -9,10 +9,10 @@ const globalForPrisma = globalThis as unknown as {
 
 const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
 
-// Check if PostgreSQL environment variable exists (excluding local mock values)
+// Check if PostgreSQL environment variable exists and is not empty
 const hasDatabaseUrl = typeof process !== 'undefined' && 
                        !!process.env.DATABASE_URL && 
-                       process.env.DATABASE_URL !== 'postgresql://postgres:postgres@localhost:5432/aurenza';
+                       process.env.DATABASE_URL.trim() !== '';
 
 export const canWriteToMockDb = (): boolean => {
   if (typeof process === 'undefined') return false;
@@ -241,7 +241,21 @@ const DEFAULT_MOCK_DATA = {
   certificates: [
     { id: "cert-1", userId: "user-student", courseId: "course-frontend", name: "Sandeep Kumar", courseName: "Frontend Development (React & Next.js)", completionDate: "May 20, 2026", certId: "AUR-FED-2026-0047", createdAt: new Date().toISOString() }
   ],
-  reviews: []
+  reviews: [],
+  faqs: [
+    { id: "faq-1", question: "What is Aurenza Academy?", answer: "Aurenza Academy is a premium software training provider offering live cohort courses in enterprise technologies.", order: 0 }
+  ],
+  homepageContents: [
+    { id: "cms-1", section: "hero", key: "title", value: "Advance Your Career With Industry Recognized Certifications" },
+    { id: "cms-2", section: "hero", key: "subtitle", value: "Learn from industry experts through live instructor-led training programs." },
+    { id: "cms-3", section: "hero", key: "cta-primary", value: "Explore Courses" },
+    { id: "cms-4", section: "hero", key: "cta-secondary", value: "Book Free Consultation" },
+    { id: "cms-5", section: "hero", key: "stats-learners", value: "5000" },
+    { id: "cms-6", section: "hero", key: "stats-courses", value: "100" },
+    { id: "cms-7", section: "hero", key: "stats-trainers", value: "50" }
+  ],
+  contactRequests: [],
+  oneOnOneRequests: []
 };
 
 if (canWriteToMockDb()) {
@@ -469,7 +483,11 @@ export const mockPrismaProxy = new Proxy({}, {
       assignment: 'assignments',
       attendance: 'attendances',
       notificationSetting: 'notificationSettings',
-      notificationLog: 'notificationLogs'
+      notificationLog: 'notificationLogs',
+      faq: 'faqs',
+      homepageContent: 'homepageContents',
+      contactRequest: 'contactRequests',
+      oneOnOneRequest: 'oneOnOneRequests'
     };
 
     if (propName in mappedTables) {

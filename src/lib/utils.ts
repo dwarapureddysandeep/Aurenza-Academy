@@ -19,7 +19,18 @@ export function parseBatchData(batch: any, courses: any[] = [], trainers: any[] 
   
   const courseName = parsed.customCourseName || (course ? course.name : 'Professional Certification');
     
-  const categoryName = course ? course.categoryName : 'Professional Certification';
+  const categoryMap: Record<string, string> = {
+    'cat-1': 'Project Management',
+    'cat-2': 'Data Science',
+    'cat-3': 'AI & Machine Learning',
+    'cat-4': 'Cloud Computing',
+    'cat-5': 'DevOps',
+    'cat-6': 'Cyber Security',
+    'cat-7': 'Full Stack Development',
+    'cat-8': 'Digital Marketing',
+    'cat-9': 'Agile Management'
+  };
+  const categoryName = course ? (course.categoryName || categoryMap[course.categoryId] || 'Professional Certification') : 'Professional Certification';
   
   const trainerName = parsed.customTrainerName || (trainer ? trainer.name : 'Rahul Sharma');
     

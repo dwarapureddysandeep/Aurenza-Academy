@@ -32,14 +32,22 @@ export default async function AdminDashboardPage() {
   }
 
   // 2. Fetch all CRM details
-  const leads = await db.lead.findMany();
-  const corporateLeads = await db.corporateLead.findMany();
-  const courses = await db.course.findMany();
-  const batches = await db.batch.findMany();
-  const trainers = await db.trainer.findMany();
-  const categories = await db.category.findMany();
+  const leads = await db.lead.findMany({ orderBy: { createdAt: 'desc' } });
+  const corporateLeads = await db.corporateLead.findMany({ orderBy: { createdAt: 'desc' } });
+  const courses = await db.course.findMany({ orderBy: { createdAt: 'desc' } });
+  const batches = await db.batch.findMany({ orderBy: { createdAt: 'desc' } });
+  const trainers = await db.trainer.findMany({ orderBy: { createdAt: 'desc' } });
+  const categories = await db.category.findMany({ orderBy: { name: 'asc' } });
   const testimonials = await db.testimonial.findMany();
-  const blogs = await db.blog.findMany();
+  const blogs = await db.blog.findMany({ orderBy: { createdAt: 'desc' } });
+  
+  // Fetch newly migrated CMS and logs tables
+  const faqs = await db.faq.findMany({ orderBy: { order: 'asc' } });
+  const homepageContent = await db.homepageContent.findMany();
+  const oneOnOneRequests = await db.oneOnOneRequest.findMany({ orderBy: { createdAt: 'desc' } });
+  const contactRequests = await db.contactRequest.findMany({ orderBy: { createdAt: 'desc' } });
+  const notificationSettings = await db.notificationSetting.findMany();
+  const notificationLogs = await db.notificationLog.findMany({ orderBy: { createdAt: 'desc' }, take: 100 });
 
   return (
     <div className="min-h-screen bg-sectionBg text-textPrimary py-12 px-4 sm:px-6 lg:px-8 font-sans">
@@ -98,8 +106,12 @@ export default async function AdminDashboardPage() {
           certificates={[]}
           testimonials={testimonials}
           blogs={blogs}
-          notificationSettings={[]}
-          notificationLogs={[]}
+          notificationSettings={notificationSettings}
+          notificationLogs={notificationLogs}
+          faqs={faqs}
+          homepageContent={homepageContent}
+          oneOnOneRequests={oneOnOneRequests}
+          contactRequests={contactRequests}
         />
 
       </div>

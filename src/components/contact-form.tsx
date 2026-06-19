@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { submitConsultationLead } from '@/lib/actions';
+import { submitContactRequest } from '@/lib/actions';
 import { CheckCircle2, User, Mail, Phone, GraduationCap } from 'lucide-react';
 import LoadingSpinner from './loading-spinner';
 
@@ -20,11 +20,11 @@ export default function ContactForm() {
     if (!name || !email || !phone || !course) return;
 
     setLoading(true);
-    const res = await submitConsultationLead({
+    const res = await submitContactRequest({
       name,
       email,
       phone,
-      course,
+      subject: course,
       message: message || "General contact inquiry submitted."
     });
 

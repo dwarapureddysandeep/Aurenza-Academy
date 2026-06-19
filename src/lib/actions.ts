@@ -360,7 +360,10 @@ export async function saveCourseAction(courseData: any) {
     if (!user || user.role !== 'ADMIN') {
       return { success: false, error: "Unauthorized access: Administrator role required." };
     }
-    const { id, name, price, duration, level, image, mentorName, mentorExp, mentorAvatar, mentorBio, categoryId } = courseData;
+    const {
+      id, name, price, duration, level, image, mentorName, mentorExp, mentorAvatar, mentorBio, categoryId,
+      brochure, description, certificationBody, skillsCovered, courseHighlights, seoData
+    } = courseData;
     
     const slug = name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
     const dataObj = {
@@ -376,7 +379,13 @@ export async function saveCourseAction(courseData: any) {
       mentorBio: mentorBio || "",
       categoryId: categoryId || "cat-7",
       syllabus: courseData.syllabus || JSON.stringify([]),
-      faqs: courseData.faqs || JSON.stringify([])
+      faqs: courseData.faqs || JSON.stringify([]),
+      brochure: brochure || null,
+      description: description || null,
+      certificationBody: certificationBody || null,
+      skillsCovered: skillsCovered || null,
+      courseHighlights: courseHighlights || null,
+      seoData: seoData || null
     };
 
     let savedCourse;
@@ -1337,5 +1346,205 @@ export async function verifyRazorpayPaymentAction(
   courseId: string,
   appliedPrice: number
 ) {
-  return { success: false, error: "Razorpay payments have been removed from the platform." };
 }
+
+export async function getFaqsAction() {
+  try {
+    return await db.faq.findMany({
+      orderBy: { order: 'asc' }
+    });
+  } catch (err: any) {
+    console.error("Failed to get FAQs:", err);
+    return [];
+  }
+}
+
+export async function saveFaqAction(faqData: any) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    const { id, question, answer, order } = faqData;
+    if (id) {
+      const updated = await db.faq.update({
+        where: { id },
+        data: {
+          question,
+          answer,
+          order: parseInt(order) || 0
+        }
+      });
+      return { success: true, data: updated };
+    } else {
+      const created = await db.faq.create({
+        data: {
+          question,
+          answer,
+          order: parseInt(order) || 0
+        }
+      });
+      return { success: true, data: created };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to save FAQ." };
+  }
+}
+
+export async function deleteFaqAction(id: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    await db.faq.delete({ where: { id } });
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete FAQ." };
+  }
+}
+
+export async function getHomepageContentAction(section?: string) {
+  try {
+    const whereClause = section ? { section } : {};
+    return await db.homepageContent.findMany({
+      where: whereClause
+    });
+  } catch (err: any) {
+    console.error("Failed to get homepage content:", err);
+    return [];
+  }
+}
+
+export async function saveHomepageContentAction(section: string, key: string, value: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    const existing = await db.homepageContent.findUnique({
+      where: {
+        section_key: { section, key }
+      }
+    });
+
+    if (existing) {
+      await db.homepageContent.update({
+        where: { id: existing.id },
+        data: { value }
+      });
+    } else {
+      await db.homepageContent.create({
+        data: { section, key, value }
+      });
+    }
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to save homepage content." };
+  }
+}
+
+export async function saveHomepageContentBulkAction(section: string, entries: Record<string, string>) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    for (const key in entries) {
+      const value = entries[key];
+      const existing = await db.homepageContent.findUnique({
+        where: {
+          section_key: { section, key }
+        }
+      });
+      if (existing) {
+        await db.homepageContent.update({
+          where: { id: existing.id },
+          data: { value }
+        });
+      } else {
+        await db.homepageContent.create({
+          data: { section, key, value }
+        });
+      }
+    }
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to save bulk homepage content." };
+  }
+}
+
+export async function getOneOnOneRequestsAction() {
+  try {
+    return await db.oneOnOneRequest.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (err: any) {
+    console.error("Failed to get 1-on-1 requests:", err);
+    return [];
+  }
+}
+
+export async function submitOneOnOneRequest(formData: any) {
+  try {
+    const { name, email, phone, preferredTime } = formData;
+    const request = await db.oneOnOneRequest.create({
+      data: {
+        name,
+        email,
+        phone,
+        preferredTime,
+        status: 'Pending'
+      }
+    });
+    return { success: true, data: request };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to submit request." };
+  }
+}
+
+export async function updateOneOnOneRequestStatusAction(requestId: string, status: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    const updated = await db.oneOnOneRequest.update({
+      where: { id: requestId },
+      data: { status }
+    });
+    return { success: true, data: updated };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to update request status." };
+  }
+}
+
+export async function getContactRequestsAction() {
+  try {
+    return await db.contactRequest.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (err: any) {
+    console.error("Failed to get contact requests:", err);
+    return [];
+  }
+}
+
+export async function submitContactRequest(formData: any) {
+  try {
+    const { name, email, phone, subject, message } = formData;
+    const request = await db.contactRequest.create({
+      data: {
+        name,
+        email,
+        phone,
+        subject,
+        message
+      }
+    });
+    return { success: true, data: request };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to submit contact request." };
+  }
+}
+

@@ -55,14 +55,22 @@ const FAQS: FAQItem[] = [
 
 interface FAQAccordionProps {
   theme?: 'light' | 'dark';
+  initialFaqs?: any[];
 }
 
-export default function FAQAccordion({ theme = 'light' }: FAQAccordionProps) {
+export default function FAQAccordion({ theme = 'light', initialFaqs = [] }: FAQAccordionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   const categories = ['All', 'General', 'Courses & Batches', 'Certification & Exams', 'Placement & Corporate'];
+
+  // Use database faqs if present, else fallback to static FAQS list
+  const activeFaqs = initialFaqs && initialFaqs.length > 0 ? initialFaqs.map(f => ({
+    question: f.question,
+    answer: f.answer,
+    category: 'General' as const
+  })) : FAQS;
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -85,7 +93,7 @@ export default function FAQAccordion({ theme = 'light' }: FAQAccordionProps) {
   };
 
   // Filter FAQs based on category and search input
-  const filteredFAQs = FAQS.filter(faq => {
+  const filteredFAQs = activeFaqs.filter(faq => {
     const categoryMatch = selectedCategory === 'All' || faq.category === selectedCategory;
     const searchMatch =
       faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -97,7 +105,7 @@ export default function FAQAccordion({ theme = 'light' }: FAQAccordionProps) {
   const jsonLdSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": FAQS.map(faq => ({
+    "mainEntity": activeFaqs.map(faq => ({
       "@type": "Question",
       "name": faq.question,
       "acceptedAnswer": {
@@ -172,7 +180,7 @@ export default function FAQAccordion({ theme = 'light' }: FAQAccordionProps) {
         {filteredFAQs.length > 0 ? (
           filteredFAQs.map((faq, idx) => {
             // Find global index of this FAQ item to handle unique key and open state
-            const globalIdx = FAQS.findIndex(item => item.question === faq.question);
+            const globalIdx = activeFaqs.findIndex(item => item.question === faq.question);
             const isOpen = openIndex === globalIdx;
             
             return (

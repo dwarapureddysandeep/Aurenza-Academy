@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -44,6 +45,8 @@ model User {
   blogs        Blog[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+
+  @@map("users")
 }
 
 model Category {
@@ -51,32 +54,42 @@ model Category {
   name    String
   slug    String   @unique
   courses Course[]
+
+  @@map("course_categories")
 }
 
 model Course {
-  id           String       @id @default(uuid())
-  name         String
-  slug         String       @unique
-  categoryId   String
-  category     Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  duration     String
-  level        String
-  price        Float
-  rating       Float        @default(5.0)
-  reviewsCount Int          @default(0)
-  image        String
-  syllabus     String       // JSON array of modules
-  faqs         String       // JSON array of FAQs
-  mentorName   String
-  mentorExp    String
-  mentorAvatar String
-  mentorBio    String
-  batches      Batch[]
-  enrollments  Enrollment[]
-  payments     Payment[]
-  certificates Certificate[]
-  reviews      Review[]
-  createdAt    DateTime     @default(now())
+  id                String       @id @default(uuid())
+  name              String
+  slug              String       @unique
+  categoryId        String
+  category          Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  duration          String
+  level             String
+  price             Float
+  rating            Float        @default(5.0)
+  reviewsCount      Int          @default(0)
+  image             String
+  brochure          String?      // public path to uploaded brochure
+  description       String?      // course details description
+  certificationBody String?      // e.g. "PMI", "Scrum Alliance"
+  skillsCovered     String?      // JSON array string
+  courseHighlights  String?      // JSON array string
+  seoData           String?      // JSON object string
+  syllabus          String       // JSON array of modules
+  faqs              String       // JSON array of FAQs
+  mentorName        String
+  mentorExp         String
+  mentorAvatar      String
+  mentorBio         String
+  batches           Batch[]
+  enrollments       Enrollment[]
+  payments          Payment[]
+  certificates      Certificate[]
+  reviews           Review[]
+  createdAt         DateTime     @default(now())
+
+  @@map("courses")
 }
 
 model Trainer {
@@ -88,20 +101,29 @@ model Trainer {
   specialty String?
   batches   Batch[]
   createdAt DateTime @default(now())
+
+  @@map("trainers")
 }
 
 model Batch {
-  id         String   @id @default(uuid())
-  courseId   String
-  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  trainerId  String
-  trainer    Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
-  startDate  String   // readable date string, e.g. "June 15, 2026"
-  timeSlot   String   // e.g. "7:00 PM - 9:00 PM IST"
-  seatsTotal Int      @default(30)
-  seatsLeft  Int      @default(30)
-  linkZoom   String   @default("https://zoom.us/j/mock-meeting")
-  createdAt  DateTime @default(now())
+  id           String   @id @default(uuid())
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  trainerId    String
+  trainer      Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  startDate    String   // readable date string, e.g. "June 15, 2026"
+  endDate      String?  // end date string
+  timeZone     String   @default("IST")
+  timeSlot     String   // e.g. "7:00 PM - 9:00 PM IST"
+  seatsTotal   Int      @default(30)
+  seatsLeft    Int      @default(30)
+  linkZoom     String   @default("https://zoom.us/j/mock-meeting")
+  batchType    String   @default("Weekend Batch") // "Weekend Batch", "Weekday Batch"
+  trainingMode String   @default("Online Classroom") // "Online Classroom", "In-Person Classroom"
+  status       String   @default("Upcoming") // "Upcoming", "Ongoing", "Completed"
+  createdAt    DateTime @default(now())
+
+  @@map("course_batches")
 }
 
 model Enrollment {
@@ -115,6 +137,7 @@ model Enrollment {
   enrolledAt DateTime @default(now())
 
   @@unique([userId, courseId])
+  @@map("enrollments")
 }
 
 model Payment {
@@ -122,11 +145,13 @@ model Payment {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseId  String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   amount    Float
   status    String   @default("Success") // "Success", "Pending", "Failed"
   txId      String   @unique
   date      DateTime @default(now())
+
+  @@map("payments")
 }
 
 model Lead {
@@ -139,6 +164,8 @@ model Lead {
   status    LeadStatus @default(NEW)
   notes     String?    @default("")
   createdAt DateTime   @default(now())
+
+  @@map("enquiries")
 }
 
 model CorporateLead {
@@ -151,6 +178,8 @@ model CorporateLead {
   message     String?
   status      String   @default("New") // "New", "Contacted", "Proposal Sent", "Closed"
   createdAt   DateTime @default(now())
+
+  @@map("corporate_leads")
 }
 
 model Webinar {
@@ -164,6 +193,8 @@ model Webinar {
   registrationsCount Int      @default(0)
   status             String   @default("Upcoming") // "Upcoming", "Live", "Completed"
   createdAt          DateTime @default(now())
+
+  @@map("webinars")
 }
 
 model Blog {
@@ -178,6 +209,8 @@ model Blog {
   tags      String[] @default([])
   views     Int      @default(0)
   createdAt DateTime @default(now())
+
+  @@map("blog_posts")
 }
 
 model Testimonial {
@@ -188,6 +221,8 @@ model Testimonial {
   rating   Int     @default(5)
   featured Boolean @default(true)
   initial  String
+
+  @@map("testimonials")
 }
 
 model Roadmap {
@@ -195,6 +230,8 @@ model Roadmap {
   title       String
   description String
   steps       String   // JSON string of timeline nodes
+
+  @@map("roadmaps")
 }
 
 model Certificate {
@@ -208,6 +245,8 @@ model Certificate {
   completionDate String
   certId         String   @unique // cryptographically unique hash or string
   createdAt      DateTime @default(now())
+
+  @@map("certificates")
 }
 
 model Review {
@@ -215,10 +254,12 @@ model Review {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseId  String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   rating    Int      @default(5)
   comment   String
   createdAt DateTime @default(now())
+
+  @@map("reviews")
 }
 
 model Assignment {
@@ -229,6 +270,8 @@ model Assignment {
   dueDate     String
   submissions String   @default("[]") // JSON representation of submissions array
   createdAt   DateTime @default(now())
+
+  @@map("assignments")
 }
 
 model Attendance {
@@ -239,12 +282,16 @@ model Attendance {
   absentCount  Int      @default(0)
   records      String   @default("[]") // JSON representation of records array
   createdAt    DateTime @default(now())
+
+  @@map("attendances")
 }
 
 model NotificationSetting {
   id    String @id @default(uuid())
   key   String @unique
   value String
+
+  @@map("settings")
 }
 
 model NotificationLog {
@@ -255,5 +302,50 @@ model NotificationLog {
   content   String
   status    String   // "SENT", "DELIVERED", "FAILED"
   createdAt DateTime @default(now())
+
+  @@map("notification_logs")
 }
 
+model Faq {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("faqs")
+}
+
+model HomepageContent {
+  id      String @id @default(uuid())
+  section String // e.g. 'hero', 'why-us', 'stats', 'partner-logos'
+  key     String // e.g. 'title', 'subtitle', 'stats-learners'
+  value   String
+
+  @@unique([section, key])
+  @@map("homepage_content")
+}
+
+model ContactRequest {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@map("contact_requests")
+}
+
+model OneOnOneRequest {
+  id            String   @id @default(uuid())
+  name          String
+  email         String
+  phone         String
+  preferredTime String
+  status        String   @default("Pending")
+  createdAt     DateTime @default(now())
+
+  @@map("one_on_one_requests")
+}

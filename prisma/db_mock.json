@@ -306,7 +306,7 @@
     },
     {
       "id": "course-itil-foundation-certification",
-      "name": "ITIL Foundation Certification",
+      "name": "ITIL® Foundation Certification",
       "slug": "itil-foundation-certification",
       "categoryId": "cat-9",
       "categoryName": "Agile Management",
@@ -1263,6 +1263,24 @@
       "syllabus": "[{\"module\":\"Module 1: Framework Foundations\",\"details\":\"Core principles, terminology, structural values, and roadmap alignments.\"},{\"module\":\"Module 2: Real-World Case Studies\",\"details\":\"Practical implementation models, team collaboration frameworks, and simulator dry runs.\"},{\"module\":\"Module 3: Exam Readiness & Practice\",\"details\":\"Full-length exam mock simulations, question logic reviews, and certified test blueprints.\"}]",
       "faqs": "[{\"q\":\"Is the official certification exam fee included in the tuition?\",\"a\":\"Yes! The standard registration, study materials, and first certification exam attempt fees are fully covered.\"},{\"q\":\"What is the training format?\",\"a\":\"The course is delivered in weekend or weekday cohorts through live-interactive virtual bootcamps with 4K recording access.\"}]",
       "createdAt": "2026-06-19T12:30:57.203Z"
+    },
+    {
+      "id": "course-advanced-safe-practice-consultant-aspc-certification",
+      "name": "Advanced SAFe Practice Consultant (ASPC) Certification",
+      "slug": "advanced-safe-practice-consultant-aspc-certification",
+      "categoryId": "cat-9",
+      "categoryName": "Agile Management",
+      "duration": "4 days",
+      "level": "Advanced",
+      "price": 29999,
+      "image": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Chad Williams",
+      "mentorExp": "10+ Years Exp",
+      "mentorAvatar": "CW",
+      "mentorBio": "Advanced SAFe Practice Consultant and Enterprise Agilist.",
+      "syllabus": "[]",
+      "faqs": "[]",
+      "createdAt": "2026-06-19T17:44:30.928Z"
     }
   ],
   "trainers": [
@@ -1283,31 +1301,45 @@
       "bio": "UI Architect focused on rendering optimization and custom animations.",
       "specialty": "React, Next.js, and CSS Systems",
       "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "trainer-alpesh-vasant",
+      "name": "Alpesh Vasant",
+      "email": "alpesh@aurenzaacademy.com",
+      "bio": "ITIL Certified Enterprise Mentor",
+      "specialty": "ITIL Frameworks",
+      "avatar": "AL",
+      "createdAt": "2026-06-19T17:44:30.926Z"
+    },
+    {
+      "id": "trainer-chad-williams",
+      "name": "Chad Williams",
+      "email": "chad@aurenzaacademy.com",
+      "bio": "Advanced SAFe Consultant & Agilist",
+      "specialty": "Agile & SAFe Frameworks",
+      "avatar": "CH",
+      "createdAt": "2026-06-19T17:44:30.928Z"
+    },
+    {
+      "id": "trainer-visakh-rj",
+      "name": "Visakh R J",
+      "email": "visakh@aurenzaacademy.com",
+      "bio": "Project Management Professional Trainer",
+      "specialty": "PMP & Project Management",
+      "avatar": "VI",
+      "createdAt": "2026-06-19T17:44:30.928Z"
+    },
+    {
+      "id": "trainer-sudipt-singh",
+      "name": "Sudipt Singh",
+      "email": "sudipt@aurenzaacademy.com",
+      "bio": "Senior Project Delivery Specialist",
+      "specialty": "PMP & Agile Delivery",
+      "avatar": "SU",
+      "createdAt": "2026-06-19T17:44:30.928Z"
     }
   ],
   "batches": [
-    {
-      "id": "batch-1",
-      "courseId": "course-java",
-      "trainerId": "trainer-1",
-      "startDate": "June 15, 2026",
-      "timeSlot": "7:00 PM - 9:00 PM IST",
-      "seatsTotal": 30,
-      "seatsLeft": 22,
-      "linkZoom": "https://zoom.us/j/mock-java-meeting",
-      "createdAt": "2026-05-30T11:44:35.491Z"
-    },
-    {
-      "id": "batch-2",
-      "courseId": "course-frontend",
-      "trainerId": "trainer-2",
-      "startDate": "June 10, 2026",
-      "timeSlot": "8:00 AM - 10:00 AM IST",
-      "seatsTotal": 25,
-      "seatsLeft": 18,
-      "linkZoom": "https://zoom.us/j/mock-frontend-meeting",
-      "createdAt": "2026-05-30T11:44:35.491Z"
-    },
     {
       "id": "batch-aws",
       "courseId": "course-aws",
@@ -1373,6 +1405,94 @@
       "seatsLeft": 22,
       "linkZoom": "https://zoom.us/j/mock-java-meeting",
       "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "batch-itil-1",
+      "courseId": "course-itil-foundation-certification",
+      "trainerId": "trainer-alpesh-vasant",
+      "startDate": "Jun 20, 2026",
+      "timeSlot": "{\"courseSource\":\"existing\",\"customCourseName\":\"\",\"trainerSource\":\"existing\",\"customTrainerName\":\"\",\"batchType\":\"Weekend\",\"trainingMode\":\"Online Classroom\",\"startDate\":\"Jun 20\",\"endDate\":\"Jun 28, 2026\",\"timeZone\":\"IST\",\"classTiming\":\"12:30 PM - 04:30 PM\",\"status\":\"Upcoming\",\"notes\":\"\"}",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-meeting",
+      "createdAt": "2026-06-19T17:44:30.928Z"
+    },
+    {
+      "id": "batch-aspc-1",
+      "courseId": "course-advanced-safe-practice-consultant-aspc-certification",
+      "trainerId": "trainer-chad-williams",
+      "startDate": "Jun 22, 2026",
+      "timeSlot": "{\"courseSource\":\"existing\",\"customCourseName\":\"\",\"trainerSource\":\"existing\",\"customTrainerName\":\"\",\"batchType\":\"Weekday\",\"trainingMode\":\"Online Classroom\",\"startDate\":\"Jun 22\",\"endDate\":\"Jun 25, 2026\",\"timeZone\":\"IST\",\"classTiming\":\"05:30 PM - 01:30 AM\",\"status\":\"Upcoming\",\"notes\":\"\"}",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-meeting",
+      "createdAt": "2026-06-19T17:44:30.928Z"
+    },
+    {
+      "id": "batch-pmp-1",
+      "courseId": "course-pmp",
+      "trainerId": "trainer-visakh-rj",
+      "startDate": "Jun 27, 2026",
+      "timeSlot": "{\"courseSource\":\"existing\",\"customCourseName\":\"\",\"trainerSource\":\"existing\",\"customTrainerName\":\"\",\"batchType\":\"Weekend\",\"trainingMode\":\"Online Classroom\",\"startDate\":\"Jun 27\",\"endDate\":\"Jul 26, 2026\",\"timeZone\":\"IST\",\"classTiming\":\"07:30 PM - 12:00 AM\",\"status\":\"Upcoming\",\"notes\":\"\"}",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-meeting",
+      "createdAt": "2026-06-19T17:44:30.928Z"
+    },
+    {
+      "id": "batch-pmp-2",
+      "courseId": "course-pmp",
+      "trainerId": "trainer-visakh-rj",
+      "startDate": "Jun 29, 2026",
+      "timeSlot": "{\"courseSource\":\"existing\",\"customCourseName\":\"\",\"trainerSource\":\"existing\",\"customTrainerName\":\"\",\"batchType\":\"Weekday\",\"trainingMode\":\"Online Classroom\",\"startDate\":\"Jun 29\",\"endDate\":\"Jul 23, 2026\",\"timeZone\":\"IST\",\"classTiming\":\"06:00 AM - 08:20 AM\",\"status\":\"Upcoming\",\"notes\":\"\"}",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-meeting",
+      "createdAt": "2026-06-19T17:44:30.928Z"
+    },
+    {
+      "id": "batch-pmp-3",
+      "courseId": "course-pmp",
+      "trainerId": "trainer-visakh-rj",
+      "startDate": "Jul 06, 2026",
+      "timeSlot": "{\"courseSource\":\"existing\",\"customCourseName\":\"\",\"trainerSource\":\"existing\",\"customTrainerName\":\"\",\"batchType\":\"Weekday\",\"trainingMode\":\"Online Classroom\",\"startDate\":\"Jul 06\",\"endDate\":\"Jul 30, 2026\",\"timeZone\":\"IST\",\"classTiming\":\"07:30 PM - 09:30 PM\",\"status\":\"Upcoming\",\"notes\":\"\"}",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-meeting",
+      "createdAt": "2026-06-19T17:44:30.928Z"
+    },
+    {
+      "id": "batch-pmp-4",
+      "courseId": "course-pmp",
+      "trainerId": "trainer-visakh-rj",
+      "startDate": "Jul 11, 2026",
+      "timeSlot": "{\"courseSource\":\"existing\",\"customCourseName\":\"\",\"trainerSource\":\"existing\",\"customTrainerName\":\"\",\"batchType\":\"Weekend\",\"trainingMode\":\"Online Classroom\",\"startDate\":\"Jul 11\",\"endDate\":\"Aug 09, 2026\",\"timeZone\":\"IST\",\"classTiming\":\"07:00 AM - 11:30 AM\",\"status\":\"Upcoming\",\"notes\":\"\"}",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-meeting",
+      "createdAt": "2026-06-19T17:44:30.928Z"
+    },
+    {
+      "id": "batch-pmp-5",
+      "courseId": "course-pmp",
+      "trainerId": "trainer-sudipt-singh",
+      "startDate": "Jul 18, 2026",
+      "timeSlot": "{\"courseSource\":\"existing\",\"customCourseName\":\"\",\"trainerSource\":\"existing\",\"customTrainerName\":\"\",\"batchType\":\"Weekend\",\"trainingMode\":\"Online Classroom\",\"startDate\":\"Jul 18\",\"endDate\":\"Aug 16, 2026\",\"timeZone\":\"IST\",\"classTiming\":\"07:30 PM - 12:00 AM\",\"status\":\"Upcoming\",\"notes\":\"\"}",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-meeting",
+      "createdAt": "2026-06-19T17:44:30.928Z"
+    },
+    {
+      "id": "batch-pmp-6",
+      "courseId": "course-pmp",
+      "trainerId": "trainer-visakh-rj",
+      "startDate": "Jul 27, 2026",
+      "timeSlot": "{\"courseSource\":\"existing\",\"customCourseName\":\"\",\"trainerSource\":\"existing\",\"customTrainerName\":\"\",\"batchType\":\"Weekday\",\"trainingMode\":\"Online Classroom\",\"startDate\":\"Jul 27\",\"endDate\":\"Aug 28, 2026\",\"timeZone\":\"IST\",\"classTiming\":\"01:30 PM - 05:30 PM\",\"status\":\"Upcoming\",\"notes\":\"\"}",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-meeting",
+      "createdAt": "2026-06-19T17:44:30.928Z"
     }
   ],
   "enrollments": [

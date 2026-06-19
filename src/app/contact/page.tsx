@@ -5,13 +5,15 @@ import Link from 'next/link';
 import WhatsAppContactButton from '@/components/whatsapp-contact-button';
 import FAQAccordion from '@/components/faq-accordion';
 import CounselingButton from '@/components/counseling-button';
+import { db } from '@/lib/db';
 
 export const metadata = {
   title: "Contact Us | Aurenza Academy",
   description: "Contact Aurenza Academy for course guidance, certification programs, corporate training, admissions support, and career counseling. Browse FAQs and connect with our advisors."
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const faqs = await db.faq.findMany({ orderBy: { order: 'asc' } });
   return (
     <div className="min-h-screen bg-white text-textPrimary py-16 px-4 sm:px-6 lg:px-8 font-sans relative overflow-hidden">
       {/* Background glowing bubbles */}
@@ -191,7 +193,7 @@ export default function ContactPage() {
               Find answers to the most common questions about our courses, certifications, and training programs.
             </p>
           </div>
-          <FAQAccordion theme="light" />
+          <FAQAccordion theme="light" initialFaqs={faqs} />
         </div>
 
       </div>

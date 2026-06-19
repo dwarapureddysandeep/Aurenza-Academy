@@ -18,7 +18,11 @@ import {
   deleteCategoryAction,
   updateLeadStatusAction,
   generateCertificateAction,
-  saveNotificationSettingsAction
+  saveNotificationSettingsAction,
+  saveFaqAction,
+  deleteFaqAction,
+  saveHomepageContentBulkAction,
+  updateOneOnOneRequestStatusAction
 } from '@/lib/actions';
 import { parseBatchData } from '@/lib/utils';
 import {
@@ -26,7 +30,7 @@ import {
   Calendar, Sparkles, Home, BookOpen, Folder, Users, CreditCard,
   MessageSquare, FileText, Settings, Trash2, Edit, Check, X,
   Search, TrendingUp, RefreshCw, BarChart2, ShieldAlert, CheckCircle, HelpCircle, ChevronRight,
-  Bell, Video
+  Bell, Video, Upload
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import LoadingSpinner from './loading-spinner';
@@ -45,6 +49,78 @@ interface AdminCrmWidgetProps {
   blogs: any[];
   notificationSettings: any[];
   notificationLogs: any[];
+  faqs?: any[];
+  homepageContent?: any[];
+  oneOnOneRequests?: any[];
+  contactRequests?: any[];
+}
+
+interface FileUploadWidgetProps {
+  label: string;
+  value: string;
+  onChange: (url: string) => void;
+  bucket: 'courses' | 'trainers' | 'testimonials' | 'brochures' | 'website-assets';
+  accept?: string;
+}
+
+function FileUploadWidget({ label, value, onChange, bucket, accept = "image/*" }: FileUploadWidgetProps) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const toastId = toast.loading(`Uploading ${file.name}...`);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('bucket', bucket);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        onChange(data.url);
+        toast.success("Upload successful!", { id: toastId });
+      } else {
+        toast.error(data.error || "Upload failed", { id: toastId });
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Upload failed", { id: toastId });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5 w-full text-xs font-semibold">
+      <label className="font-bold text-textSecondary uppercase tracking-wide">{label}</label>
+      <div className="flex items-center gap-3">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="File URL (browse file or paste link)"
+          className="glass-input flex-1"
+        />
+        <label className="px-4 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primaryHover border border-primary/20 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0">
+          <Upload className="w-4 h-4" />
+          {uploading ? "Uploading..." : "Browse"}
+          <input
+            type="file"
+            accept={accept}
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={uploading}
+          />
+        </label>
+      </div>
+    </div>
+  );
 }
 
 export default function AdminCrmWidget({
@@ -60,15 +136,52 @@ export default function AdminCrmWidget({
   testimonials,
   blogs,
   notificationSettings,
-  notificationLogs
+  notificationLogs,
+  faqs = [],
+  homepageContent = [],
+  oneOnOneRequests = [],
+  contactRequests = []
 }: AdminCrmWidgetProps) {
   const router = useRouter();
   
-  // 12 Tabs
-  type TabType = 'overview' | 'enquiries' | 'courses' | 'categories' | 'tutors' | 'batches' | 'students' | 'payments' | 'testimonials' | 'corporate' | 'notifications' | 'settings';
+  // Tabs
+  type TabType = 'overview' | 'enquiries' | 'courses' | 'categories' | 'tutors' | 'batches' | 'students' | 'payments' | 'testimonials' | 'corporate' | 'notifications' | 'settings' | 'homepageCms' | 'faqs' | 'oneOnOne' | 'contacts';
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Helper to extract CMS values
+  const getCmsValue = (section: string, key: string, defaultValue: string = '') => {
+    const entry = homepageContent.find(c => c.section === section && c.key === key);
+    return entry ? entry.value : defaultValue;
+  };
+
+  // FAQ lists & Form
+  const [faqsList, setFaqsList] = useState<any[]>(faqs);
+  const [editingFaq, setEditingFaq] = useState<any | null>(null);
+  const [faqForm, setFaqForm] = useState({
+    id: '',
+    question: '',
+    answer: '',
+    order: '0'
+  });
+
+  // 1-on-1 Requests list
+  const [oneOnOneList, setOneOnOneList] = useState<any[]>(oneOnOneRequests);
+
+  // Contact Requests list
+  const [contactList, setContactList] = useState<any[]>(contactRequests);
+
+  // Homepage CMS State
+  const [homepageForm, setHomepageForm] = useState({
+    hero_title: getCmsValue('hero', 'title', 'Advance Your Career With Industry Recognized Certifications'),
+    hero_subtitle: getCmsValue('hero', 'subtitle', 'Learn from industry experts through live instructor-led training programs.'),
+    hero_cta_primary: getCmsValue('hero', 'cta-primary', 'Explore Courses'),
+    hero_cta_secondary: getCmsValue('hero', 'cta-secondary', 'Book Free Consultation'),
+    hero_stats_learners: getCmsValue('hero', 'stats-learners', '5000'),
+    hero_stats_courses: getCmsValue('hero', 'stats-courses', '100'),
+    hero_stats_trainers: getCmsValue('hero', 'stats-trainers', '50')
+  });
 
   // ----------------------------------------------------
   // FORM STATES & EDITING TRIGGERS
@@ -89,7 +202,13 @@ export default function AdminCrmWidget({
     mentorBio: '',
     categoryId: '',
     syllabus: '',
-    faqs: ''
+    faqs: '',
+    brochure: '',
+    description: '',
+    certificationBody: '',
+    skillsCovered: '',
+    courseHighlights: '',
+    seoData: ''
   });
 
   // Category Form
@@ -211,19 +330,28 @@ export default function AdminCrmWidget({
     }
   }, [courses, trainers, categories]);
 
-  // Load Settings from LocalStorage if browser context
+  // Load Settings from Prop (Database) or fallback to LocalStorage if browser context
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (notificationSettings && notificationSettings.length > 0) {
+      const dbSettings: any = {};
+      notificationSettings.forEach(s => {
+        dbSettings[s.key] = s.value;
+      });
+      setSettingsForm(prev => ({
+        ...prev,
+        ...dbSettings
+      }));
+    } else if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('aurenza_settings');
       if (saved) {
         try {
-          setSettingsForm(JSON.parse(saved));
+          setSettingsForm(prev => ({ ...prev, ...JSON.parse(saved) }));
         } catch (e) {
           // fallback to defaults
         }
       }
     }
-  }, []);
+  }, [notificationSettings]);
 
   // ----------------------------------------------------
   // MUTATION HANDLERS
@@ -243,7 +371,9 @@ export default function AdminCrmWidget({
       setCourseForm({
         id: '', name: '', price: '', duration: '', level: 'Beginner',
         image: '', mentorName: '', mentorExp: '', mentorAvatar: '', mentorBio: '',
-        categoryId: categories[0]?.id || '', syllabus: '', faqs: ''
+        categoryId: categories[0]?.id || '', syllabus: '', faqs: '',
+        brochure: '', description: '', certificationBody: '',
+        skillsCovered: '', courseHighlights: '', seoData: ''
       });
       router.refresh();
     } else {
@@ -557,11 +687,97 @@ export default function AdminCrmWidget({
     }
   };
 
-  // Settings Save
-  const handleSaveSettings = (e: React.FormEvent) => {
+  // Settings Save to Database
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('aurenza_settings', JSON.stringify(settingsForm));
-    toast.success("Branding configuration and gateway API keys saved locally!");
+    setLoading(true);
+    toast.loading("Saving settings configurations...", { id: "settings" });
+    const res = await saveNotificationSettingsAction(settingsForm);
+    setLoading(false);
+    if (res.success) {
+      toast.success("Branding configuration and gateway API keys saved in database!", { id: "settings" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to save settings.", { id: "settings" });
+    }
+  };
+
+  // FAQ Mutations
+  const handleSaveFaq = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    toast.loading("Saving FAQ...", { id: "faq-action" });
+    const res = await saveFaqAction(faqForm);
+    setLoading(false);
+    if (res.success) {
+      toast.success("FAQ saved successfully!", { id: "faq-action" });
+      setEditingFaq(null);
+      setFaqForm({ id: '', question: '', answer: '', order: '0' });
+      if (faqForm.id) {
+        setFaqsList(prev => prev.map(f => f.id === faqForm.id ? res.data : f));
+      } else {
+        setFaqsList(prev => [...prev, res.data].sort((a, b) => a.order - b.order));
+      }
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to save FAQ.", { id: "faq-action" });
+    }
+  };
+
+  const handleDeleteFaq = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this FAQ?")) return;
+    setLoading(true);
+    toast.loading("Deleting FAQ...", { id: "faq-action" });
+    const res = await deleteFaqAction(id);
+    setLoading(false);
+    if (res.success) {
+      toast.success("FAQ deleted successfully!", { id: "faq-action" });
+      setFaqsList(prev => prev.filter(f => f.id !== id));
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to delete FAQ.", { id: "faq-action" });
+    }
+  };
+
+  // Homepage CMS Mutations
+  const handleSaveHomepageCms = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    toast.loading("Updating Homepage Content...", { id: "cms-action" });
+    
+    const entries: Record<string, string> = {
+      "title": homepageForm.hero_title,
+      "subtitle": homepageForm.hero_subtitle,
+      "cta-primary": homepageForm.hero_cta_primary,
+      "cta-secondary": homepageForm.hero_cta_secondary,
+      "stats-learners": homepageForm.hero_stats_learners,
+      "stats-courses": homepageForm.hero_stats_courses,
+      "stats-trainers": homepageForm.hero_stats_trainers
+    };
+
+    const res = await saveHomepageContentBulkAction("hero", entries);
+    setLoading(false);
+    if (res.success) {
+      toast.success("Homepage content updated in database!", { id: "cms-action" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to save homepage content.", { id: "cms-action" });
+    }
+  };
+
+  // 1-on-1 Requests Status Mutation
+  const handleUpdateOneOnOneStatus = async (requestId: string, status: string) => {
+    setLoading(true);
+    toast.loading("Updating request status...", { id: "req-action" });
+    const res = await updateOneOnOneRequestStatusAction(requestId, status);
+    setLoading(false);
+    if (res.success) {
+      toast.success(`Request status updated to ${status}!`, { id: "req-action" });
+      setOneOnOneList(prev => prev.map(r => r.id === requestId ? { ...r, status } : r));
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to update request status.", { id: "req-action" });
+    }
   };
 
   // Save Notification Engine Settings (Phase 9)
@@ -643,6 +859,10 @@ export default function AdminCrmWidget({
           { id: 'batches', label: 'Batches & Live', icon: <Calendar className="w-4 h-4" /> },
           { id: 'testimonials', label: 'Reviews & Quotes', icon: <MessageSquare className="w-4 h-4" /> },
           { id: 'corporate', label: 'Corporate Leads', icon: <Briefcase className="w-4 h-4" /> },
+          { id: 'homepageCms', label: 'Homepage CMS', icon: <Sparkles className="w-4 h-4" /> },
+          { id: 'faqs', label: 'General FAQs', icon: <HelpCircle className="w-4 h-4" /> },
+          { id: 'oneOnOne', label: '1-on-1 Requests', icon: <Clock className="w-4 h-4" /> },
+          { id: 'contacts', label: 'Contact Logs', icon: <Mail className="w-4 h-4" /> },
           { id: 'settings', label: 'Website Settings', icon: <Settings className="w-4 h-4" /> }
         ].map((tab) => (
           <button
@@ -664,6 +884,11 @@ export default function AdminCrmWidget({
             {tab.id === 'corporate' && initialCorporateLeads.filter(c => c.status === 'New').length > 0 && (
               <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold ${activeTab === 'corporate' ? 'bg-white text-primary' : 'bg-rose-500 text-white animate-pulse'}`}>
                 {initialCorporateLeads.filter(c => c.status === 'New').length}
+              </span>
+            )}
+            {tab.id === 'oneOnOne' && oneOnOneList.filter(r => r.status === 'Pending').length > 0 && (
+              <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold ${activeTab === 'oneOnOne' ? 'bg-white text-primary' : 'bg-rose-500 text-white animate-pulse'}`}>
+                {oneOnOneList.filter(r => r.status === 'Pending').length}
               </span>
             )}
             {tab.id === 'payments' && payments.filter(p => p.status === 'Pending').length > 0 && (
@@ -811,7 +1036,9 @@ export default function AdminCrmWidget({
                     setCourseForm({
                       id: '', name: '', price: '', duration: '', level: 'Beginner',
                       image: '', mentorName: '', mentorExp: '', mentorAvatar: '', mentorBio: '',
-                      categoryId: categories[0]?.id || '', syllabus: '', faqs: ''
+                      categoryId: categories[0]?.id || '', syllabus: '', faqs: '',
+                      brochure: '', description: '', certificationBody: '',
+                      skillsCovered: '', courseHighlights: '', seoData: ''
                     });
                   }}
                   className="px-4 py-2 bg-primary text-white text-xs font-black rounded-xl hover:bg-primaryHover transition flex items-center gap-1.5 shadow-soft"
@@ -900,13 +1127,71 @@ export default function AdminCrmWidget({
                     </select>
                   </div>
 
+                  <FileUploadWidget
+                    label="Banner Thumbnail Image"
+                    value={courseForm.image}
+                    onChange={(url) => setCourseForm(prev => ({ ...prev, image: url }))}
+                    bucket="courses"
+                  />
+
+                  <FileUploadWidget
+                    label="Course Brochure PDF"
+                    value={courseForm.brochure}
+                    onChange={(url) => setCourseForm(prev => ({ ...prev, brochure: url }))}
+                    bucket="brochures"
+                    accept="application/pdf"
+                  />
+
+                  <div className="flex flex-col gap-1.5 col-span-2">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Course Description</label>
+                    <textarea
+                      value={courseForm.description}
+                      onChange={(e) => setCourseForm(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Enter detailed description of the course..."
+                      className="glass-input min-h-[80px]"
+                    />
+                  </div>
+
                   <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Banner Thumbnail URL</label>
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Certification Body</label>
                     <input
                       type="text"
-                      value={courseForm.image}
-                      onChange={(e) => setCourseForm(prev => ({ ...prev, image: e.target.value }))}
-                      placeholder="e.g. https://images.unsplash.com/photo-..."
+                      value={courseForm.certificationBody}
+                      onChange={(e) => setCourseForm(prev => ({ ...prev, certificationBody: e.target.value }))}
+                      placeholder="e.g. PMI, Scrum Alliance, AWS"
+                      className="glass-input"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Skills Covered (comma separated)</label>
+                    <input
+                      type="text"
+                      value={courseForm.skillsCovered}
+                      onChange={(e) => setCourseForm(prev => ({ ...prev, skillsCovered: e.target.value }))}
+                      placeholder="e.g. Java, Spring Boot, React"
+                      className="glass-input"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Course Highlights (comma separated)</label>
+                    <input
+                      type="text"
+                      value={courseForm.courseHighlights}
+                      onChange={(e) => setCourseForm(prev => ({ ...prev, courseHighlights: e.target.value }))}
+                      placeholder="e.g. 100% Placement, 1-on-1 Mentorship"
+                      className="glass-input"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 col-span-2">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">SEO Keywords (comma separated)</label>
+                    <input
+                      type="text"
+                      value={courseForm.seoData}
+                      onChange={(e) => setCourseForm(prev => ({ ...prev, seoData: e.target.value }))}
+                      placeholder="e.g. java, full stack, coding bootcamp"
                       className="glass-input"
                     />
                   </div>
@@ -1059,7 +1344,13 @@ export default function AdminCrmWidget({
                               mentorBio: c.mentorBio || '',
                               categoryId: c.categoryId,
                               syllabus: c.syllabus || '',
-                              faqs: c.faqs || ''
+                              faqs: c.faqs || '',
+                              brochure: c.brochure || '',
+                              description: c.description || '',
+                              certificationBody: c.certificationBody || '',
+                              skillsCovered: c.skillsCovered || '',
+                              courseHighlights: c.courseHighlights || '',
+                              seoData: c.seoData || ''
                             });
                           }}
                           className="flex-1 py-2 border border-borderLight hover:border-primary hover:text-primary rounded-xl text-center transition flex items-center justify-center gap-1"
@@ -1229,16 +1520,12 @@ export default function AdminCrmWidget({
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Avatar Initials / Image URL</label>
-                    <input
-                      type="text"
-                      value={tutorForm.avatar}
-                      onChange={(e) => setTutorForm(prev => ({ ...prev, avatar: e.target.value }))}
-                      placeholder="e.g. RS"
-                      className="glass-input"
-                    />
-                  </div>
+                  <FileUploadWidget
+                    label="Tutor Photo / Avatar"
+                    value={tutorForm.avatar}
+                    onChange={(url) => setTutorForm(prev => ({ ...prev, avatar: url }))}
+                    bucket="trainers"
+                  />
 
                   <div className="flex flex-col gap-1.5">
                     <label className="font-bold text-textSecondary uppercase tracking-wide">Specialty Domain</label>
@@ -2704,6 +2991,389 @@ export default function AdminCrmWidget({
                     </tbody>
                   </table>
                 </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB: HOMEPAGE CMS */}
+        {/* ======================================================== */}
+        {activeTab === 'homepageCms' && (
+          <div className="space-y-6">
+            <div className="border-b border-borderLight pb-4">
+              <h3 className="text-base font-extrabold heading flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" /> Homepage Content Management (CMS)
+              </h3>
+              <p className="text-xs text-textSecondary mt-1">Dynamically update the hero titles, CTA button labels, and floating metric counts on the landing page.</p>
+            </div>
+
+            <form onSubmit={handleSaveHomepageCms} className="space-y-6 text-xs text-textPrimary">
+              {/* Hero Copy */}
+              <div className="border border-borderLight rounded-2xl p-5 space-y-4">
+                <h4 className="font-extrabold text-[11px] uppercase tracking-wider text-primary border-b border-borderLight pb-2">Hero Copy & Text</h4>
+                <div className="grid gap-4 sm:grid-cols-1">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Main Hero Title</label>
+                    <input
+                      type="text"
+                      required
+                      value={homepageForm.hero_title}
+                      onChange={(e) => setHomepageForm(prev => ({ ...prev, hero_title: e.target.value }))}
+                      className="glass-input"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Hero Subtitle</label>
+                    <textarea
+                      required
+                      value={homepageForm.hero_subtitle}
+                      onChange={(e) => setHomepageForm(prev => ({ ...prev, hero_subtitle: e.target.value }))}
+                      className="glass-input min-h-[80px]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Call to Actions */}
+              <div className="border border-borderLight rounded-2xl p-5 space-y-4">
+                <h4 className="font-extrabold text-[11px] uppercase tracking-wider text-secondary border-b border-borderLight pb-2">Call to Action Labels</h4>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Primary CTA Button Label</label>
+                    <input
+                      type="text"
+                      required
+                      value={homepageForm.hero_cta_primary}
+                      onChange={(e) => setHomepageForm(prev => ({ ...prev, hero_cta_primary: e.target.value }))}
+                      className="glass-input"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Secondary CTA Button Label</label>
+                    <input
+                      type="text"
+                      required
+                      value={homepageForm.hero_cta_secondary}
+                      onChange={(e) => setHomepageForm(prev => ({ ...prev, hero_cta_secondary: e.target.value }))}
+                      className="glass-input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Hero Stats */}
+              <div className="border border-borderLight rounded-2xl p-5 space-y-4">
+                <h4 className="font-extrabold text-[11px] uppercase tracking-wider text-amber-500 border-b border-borderLight pb-2">Floating Metric Targets</h4>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Learners Target Count</label>
+                    <input
+                      type="number"
+                      required
+                      value={homepageForm.hero_stats_learners}
+                      onChange={(e) => setHomepageForm(prev => ({ ...prev, hero_stats_learners: e.target.value }))}
+                      className="glass-input"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Elite Courses Target Count</label>
+                    <input
+                      type="number"
+                      required
+                      value={homepageForm.hero_stats_courses}
+                      onChange={(e) => setHomepageForm(prev => ({ ...prev, hero_stats_courses: e.target.value }))}
+                      className="glass-input"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Expert Mentors Target Count</label>
+                    <input
+                      type="number"
+                      required
+                      value={homepageForm.hero_stats_trainers}
+                      onChange={(e) => setHomepageForm(prev => ({ ...prev, hero_stats_trainers: e.target.value }))}
+                      className="glass-input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-primary text-white font-black hover:bg-primaryHover hover:shadow-glowPurple transition rounded-xl text-xs uppercase tracking-wider"
+              >
+                {loading ? "Updating Homepage CMS..." : "Publish Homepage Updates"}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB: GENERAL FAQS */}
+        {/* ======================================================== */}
+        {activeTab === 'faqs' && (
+          <div className="space-y-6">
+            <div className="border-b border-borderLight pb-4 flex justify-between items-center">
+              <div>
+                <h3 className="text-base font-extrabold heading flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-primary" /> General FAQ Management
+                </h3>
+                <p className="text-xs text-textSecondary mt-1">Add, update, or remove site-wide frequently asked questions displayed on the FAQ support page.</p>
+              </div>
+              {!editingFaq && (
+                <button
+                  onClick={() => {
+                    setEditingFaq('new');
+                    setFaqForm({ id: '', question: '', answer: '', order: (faqsList.length + 1).toString() });
+                  }}
+                  className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl flex items-center gap-1.5 hover:bg-primaryHover hover:shadow-soft transition"
+                >
+                  <PlusCircle className="w-4 h-4" /> Add New FAQ
+                </button>
+              )}
+            </div>
+
+            {editingFaq && (
+              <div className="border border-borderLight rounded-2xl p-5 bg-[#FAFAFC] space-y-4">
+                <h4 className="font-extrabold text-xs text-textPrimary">
+                  {editingFaq === 'new' ? "Add Site FAQ" : `Edit FAQ #${faqForm.id.substring(0, 6)}`}
+                </h4>
+                <form onSubmit={handleSaveFaq} className="space-y-4 text-xs font-semibold">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Question Text</label>
+                    <textarea
+                      required
+                      value={faqForm.question}
+                      onChange={(e) => setFaqForm(prev => ({ ...prev, question: e.target.value }))}
+                      className="glass-input min-h-[60px]"
+                      placeholder="e.g., What are the prerequisites?"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Detailed Answer</label>
+                    <textarea
+                      required
+                      value={faqForm.answer}
+                      onChange={(e) => setFaqForm(prev => ({ ...prev, answer: e.target.value }))}
+                      className="glass-input min-h-[100px]"
+                      placeholder="Provide a detailed response..."
+                    />
+                  </div>
+                  <div className="w-1/3 flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Sort Index (Order)</label>
+                    <input
+                      type="number"
+                      required
+                      value={faqForm.order}
+                      onChange={(e) => setFaqForm(prev => ({ ...prev, order: e.target.value }))}
+                      className="glass-input"
+                    />
+                  </div>
+                  <div className="flex gap-3 justify-end pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditingFaq(null)}
+                      className="px-4 py-2 border border-borderLight rounded-xl text-textSecondary font-bold hover:bg-white transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primaryHover transition"
+                    >
+                      Save FAQ
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {!editingFaq && (
+              <div className="bg-white border border-borderLight rounded-2xl overflow-hidden shadow-soft">
+                {faqsList.length === 0 ? (
+                  <div className="p-12 text-center text-textSecondary space-y-2">
+                    <HelpCircle className="w-10 h-10 text-borderLight mx-auto" />
+                    <p className="text-xs font-semibold">No general FAQs initialized yet.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-sectionBg border-b border-borderLight text-textSecondary font-bold uppercase tracking-wider text-[10px]">
+                          <th className="p-4 w-16 text-center">Order</th>
+                          <th className="p-4">Question</th>
+                          <th className="p-4">Answer Summary</th>
+                          <th className="p-4 w-24 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-borderLight font-medium">
+                        {faqsList.map((faq) => (
+                          <tr key={faq.id} className="hover:bg-sectionBg/50 transition">
+                            <td className="p-4 text-center font-bold text-primary">{faq.order}</td>
+                            <td className="p-4 font-extrabold text-textPrimary max-w-[200px] truncate">{faq.question}</td>
+                            <td className="p-4 text-textSecondary max-w-[300px] truncate">{faq.answer}</td>
+                            <td className="p-4 text-right flex justify-end gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingFaq(faq.id);
+                                  setFaqForm({
+                                    id: faq.id,
+                                    question: faq.question,
+                                    answer: faq.answer,
+                                    order: faq.order.toString()
+                                  });
+                                }}
+                                className="p-1.5 rounded hover:bg-sectionBg text-textSecondary hover:text-primary transition"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteFaq(faq.id)}
+                                className="p-1.5 rounded hover:bg-sectionBg text-textSecondary hover:text-rose-500 transition"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB: 1-on-1 COUNSELING REQUESTS */}
+        {/* ======================================================== */}
+        {activeTab === 'oneOnOne' && (
+          <div className="space-y-6">
+            <div className="border-b border-borderLight pb-4">
+              <h3 className="text-base font-extrabold heading flex items-center gap-2">
+                <Clock className="w-5 h-5 text-primary" /> 1-on-1 Counseling Requests
+              </h3>
+              <p className="text-xs text-textSecondary mt-1">Review requests from students seeking personal roadmap reviews and live counseling call sessions.</p>
+            </div>
+
+            <div className="bg-white border border-borderLight rounded-2xl overflow-hidden shadow-soft">
+              {oneOnOneList.length === 0 ? (
+                <div className="p-12 text-center text-textSecondary space-y-2">
+                  <Clock className="w-10 h-10 text-borderLight mx-auto animate-pulse" />
+                  <p className="text-xs font-semibold">No 1-on-1 counseling calls booked yet.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-sectionBg border-b border-borderLight text-textSecondary font-bold uppercase tracking-wider text-[10px]">
+                        <th className="p-4">Student</th>
+                        <th className="p-4">Preferred Slot</th>
+                        <th className="p-4">Contact Info</th>
+                        <th className="p-4">Status</th>
+                        <th className="p-4 w-32 text-right">Update Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-borderLight font-medium">
+                      {oneOnOneList.map((req) => (
+                        <tr key={req.id} className="hover:bg-sectionBg/50 transition">
+                          <td className="p-4">
+                            <div className="font-extrabold text-textPrimary">{req.name}</div>
+                            <div className="text-[10px] text-textSecondary">{new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                          </td>
+                          <td className="p-4 text-primary font-bold">{req.preferredTime}</td>
+                          <td className="p-4 space-y-0.5">
+                            <div className="flex items-center gap-1 text-textSecondary"><Mail className="w-3.5 h-3.5 text-borderLight" /> {req.email}</div>
+                            <div className="flex items-center gap-1 text-textSecondary"><Phone className="w-3.5 h-3.5 text-borderLight" /> {req.phone}</div>
+                          </td>
+                          <td className="p-4">
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${
+                              req.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                              req.status === 'Contacted' ? 'bg-blue-100 text-blue-700' :
+                              req.status === 'Cancelled' ? 'bg-rose-100 text-rose-700' :
+                              'bg-amber-100 text-amber-700 animate-pulse'
+                            }`}>
+                              {req.status}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right flex justify-end gap-1">
+                            {req.status !== 'Completed' && (
+                              <button
+                                onClick={() => handleUpdateOneOnOneStatus(req.id, 'Completed')}
+                                className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-[10px] font-bold transition"
+                                title="Mark Completed"
+                              >
+                                Done
+                              </button>
+                            )}
+                            {req.status === 'Pending' && (
+                              <button
+                                onClick={() => handleUpdateOneOnOneStatus(req.id, 'Contacted')}
+                                className="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-[10px] font-bold transition"
+                                title="Mark Contacted"
+                              >
+                                Call
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB: GENERAL CONTACT LOGS */}
+        {/* ======================================================== */}
+        {activeTab === 'contacts' && (
+          <div className="space-y-6">
+            <div className="border-b border-borderLight pb-4">
+              <h3 className="text-base font-extrabold heading flex items-center gap-2">
+                <Mail className="w-5 h-5 text-primary" /> General Contact Logs
+              </h3>
+              <p className="text-xs text-textSecondary mt-1">Read messages submitted through the website Contact Us page.</p>
+            </div>
+
+            <div className="space-y-4">
+              {contactList.length === 0 ? (
+                <div className="bg-white border border-borderLight rounded-2xl p-12 text-center text-textSecondary space-y-2">
+                  <Mail className="w-10 h-10 text-borderLight mx-auto" />
+                  <p className="text-xs font-semibold">No contact inquiries found in database logs.</p>
+                </div>
+              ) : (
+                contactList.map((msg) => (
+                  <div key={msg.id} className="bg-white border border-borderLight p-6 rounded-2xl shadow-soft space-y-4 hover:border-primary/50 transition">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-sectionBg pb-3">
+                      <div>
+                        <h4 className="text-xs font-black text-textPrimary">{msg.name}</h4>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-textSecondary mt-1">
+                          <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5 text-borderLight" /> {msg.email}</span>
+                          <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-borderLight" /> {msg.phone}</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-textSecondary bg-sectionBg px-2 py-0.5 rounded-full">
+                        {new Date(msg.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs">
+                      <div className="font-extrabold text-primary flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        Subject: {msg.subject}
+                      </div>
+                      <p className="text-textSecondary leading-relaxed bg-[#FAFAFC] p-3 rounded-xl border border-sectionBg select-all">
+                        {msg.message}
+                      </p>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>

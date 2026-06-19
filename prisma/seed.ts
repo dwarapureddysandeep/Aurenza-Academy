@@ -76,6 +76,7 @@ async function main() {
   const cyberCat = await prisma.category.create({ data: { id: "cat-6", name: "Cyber Security", slug: "cyber-security" } });
   const fsCat = await prisma.category.create({ data: { id: "cat-7", name: "Full Stack Development", slug: "full-stack" } });
   const mktCat = await prisma.category.create({ data: { id: "cat-8", name: "Digital Marketing", slug: "digital-marketing" } });
+  const agileCat = await prisma.category.create({ data: { id: "cat-9", name: "Agile Management", slug: "agile-management" } });
 
   // 4. Seed Course Mentors / Trainers
   console.log('[Seeder] Seeding trainers...');
@@ -188,6 +189,31 @@ async function main() {
       ]),
     },
   });
+
+  console.log('[Seeder] Seeding generated courses...');
+  const generatedCourses = require('../src/lib/generated_array.json');
+  for (const course of generatedCourses) {
+    await prisma.course.create({
+      data: {
+        id: course.id,
+        name: course.name,
+        slug: course.slug,
+        categoryId: course.categoryId,
+        duration: course.duration,
+        level: course.level,
+        price: parseFloat(course.price) || 0.0,
+        rating: parseFloat(course.rating) || 5.0,
+        reviewsCount: parseInt(course.reviewsCount) || 0,
+        image: course.image,
+        mentorName: course.mentorName,
+        mentorExp: course.mentorExp,
+        mentorAvatar: course.mentorAvatar,
+        mentorBio: course.mentorBio,
+        syllabus: typeof course.syllabus === 'string' ? course.syllabus : JSON.stringify(course.syllabus || []),
+        faqs: typeof course.faqs === 'string' ? course.faqs : JSON.stringify(course.faqs || [])
+      }
+    });
+  }
 
   // 6. Seed Cohorts / Batches
   console.log('[Seeder] Seeding cohorts...');

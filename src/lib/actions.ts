@@ -3,6 +3,7 @@
 import { db } from './db';
 import { signToken, verifyToken } from './jwt';
 import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
 import crypto from 'crypto';
 
 // Password hashing simulation matching the old DB logic
@@ -390,6 +391,12 @@ export async function saveCourseAction(courseData: any) {
       });
     }
 
+    revalidatePath('/admin');
+    revalidatePath('/upcoming-cohorts');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
     return { success: true, course: savedCourse };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to save course data." };
@@ -403,6 +410,13 @@ export async function deleteCourseAction(id: string) {
       return { success: false, error: "Unauthorized access: Administrator role required." };
     }
     await db.course.delete({ where: { id } });
+
+    revalidatePath('/admin');
+    revalidatePath('/upcoming-cohorts');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to delete course." };
@@ -590,6 +604,12 @@ export async function saveTrainerAction(trainerData: any) {
       });
     }
 
+    revalidatePath('/admin');
+    revalidatePath('/upcoming-cohorts');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
     return { success: true, trainer: savedTrainer };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to save trainer." };
@@ -603,6 +623,13 @@ export async function deleteTrainerAction(id: string) {
       return { success: false, error: "Unauthorized access: Administrator role required." };
     }
     await db.trainer.delete({ where: { id } });
+
+    revalidatePath('/admin');
+    revalidatePath('/upcoming-cohorts');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to delete trainer." };
@@ -642,6 +669,12 @@ export async function saveBatchAction(batchData: any) {
       });
     }
 
+    revalidatePath('/admin');
+    revalidatePath('/upcoming-cohorts');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
     return { success: true, batch: savedBatch };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to save batch." };
@@ -655,6 +688,13 @@ export async function deleteBatchAction(id: string) {
       return { success: false, error: "Unauthorized access: Administrator or Trainer role required." };
     }
     await db.batch.delete({ where: { id } });
+
+    revalidatePath('/admin');
+    revalidatePath('/upcoming-cohorts');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to delete batch." };
@@ -1038,6 +1078,12 @@ export async function saveTrainerProfileAction(trainerData: any) {
         });
       }
     }
+
+    revalidatePath('/admin');
+    revalidatePath('/upcoming-cohorts');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
 
     return { success: true, trainer: updated };
   } catch (err: any) {

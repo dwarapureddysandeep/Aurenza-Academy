@@ -63,6 +63,24 @@ export default function CourseFilterGrid({
     'certified-scrummaster-csm'
   ];
 
+  const pmSlugsOrder = [
+    'pmp-certification',
+    'prince2-foundation-and-practitioner',
+    'pmi-certified-professional-in-managing-ai-pmi-cpmai-certification-course',
+    'prince2-foundation-course',
+    'project-management-techniques',
+    'capm-certification',
+    'program-management-professional-pgmp-certification',
+    'prince2-practitioner',
+    'prince2-agile-foundation-certification',
+    'project-management-masters-certification-program',
+    'portfolio-management-professional-pfmp-certification',
+    'prince2-agile-practitioner-certification',
+    'microsoft-project-2013',
+    'oracle-primavera-training',
+    'microsoft-project-2007-2010'
+  ];
+
   const sortedCourses = [...initialCourses].sort((a, b) => {
     const indexA = prioritySlugs.indexOf(a.slug);
     const indexB = prioritySlugs.indexOf(b.slug);
@@ -78,8 +96,12 @@ export default function CourseFilterGrid({
     // Category match
     const categoryMatch = selectedCategory === 'All'
       ? true
-      : course.categoryName.toLowerCase().includes(selectedCategory.toLowerCase()) || 
-        course.name.toLowerCase().includes(selectedCategory.toLowerCase());
+      : selectedCategory === 'Project'
+        ? course.categoryName === 'Project Management'
+        : selectedCategory === 'Agile'
+          ? course.categoryName === 'Agile Management'
+          : course.categoryName.toLowerCase().includes(selectedCategory.toLowerCase()) || 
+            course.name.toLowerCase().includes(selectedCategory.toLowerCase());
 
     // Search query match
     const searchMatch = searchQuery.trim() === ''
@@ -90,7 +112,19 @@ export default function CourseFilterGrid({
     return categoryMatch && searchMatch;
   });
 
-  const coursesToDisplay = limit ? filteredCourses.slice(0, limit) : filteredCourses;
+  let displayCourses = [...filteredCourses];
+  if (selectedCategory === 'Project') {
+    displayCourses.sort((a, b) => {
+      const idxA = pmSlugsOrder.indexOf(a.slug);
+      const idxB = pmSlugsOrder.indexOf(b.slug);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return 0;
+    });
+  }
+
+  const coursesToDisplay = limit ? displayCourses.slice(0, limit) : displayCourses;
 
   const triggerEnroll = (courseName: string) => {
     window.dispatchEvent(new CustomEvent('open-lead-modal', { 

@@ -163,10 +163,10 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
                           transition={{ duration: 0.2, ease: 'easeOut' }}
                           className="absolute top-full left-1/2 -translate-x-[35%] pt-3 cursor-default"
                         >
-                          <div className="w-[850px] bg-white rounded-modal shadow-soft border border-borderLight p-6 grid grid-cols-12 gap-8">
+                          <div className="w-[880px] xl:w-[920px] bg-white rounded-modal shadow-soft border border-borderLight p-6 grid grid-cols-12 gap-8 whitespace-normal z-50">
                             
                             {/* Left Column: Categories List */}
-                            <div className="col-span-5 border-r border-borderLight pr-6 space-y-4">
+                            <div className="col-span-5 border-r border-borderLight pr-8 space-y-4">
                               <span className="text-[10px] font-black uppercase tracking-widest text-[#8A8A9A]">
                                 Category tracks
                               </span>
@@ -187,10 +187,10 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
 
                             {/* Right Column: Featured Courses */}
                             <div className="col-span-7 space-y-4">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-[#8A8A9A] block">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-[#8A8A9A] block font-sans">
                                 Featured Programs
                               </span>
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                                 {featuredCourses.map((course) => (
                                   <Link
                                     key={course.name}
@@ -200,10 +200,10 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
                                   >
                                     <span className="text-xl shrink-0 mt-0.5">{course.icon}</span>
                                     <div className="min-w-0">
-                                      <h4 className="text-xs font-bold text-textPrimary group-hover:text-primary transition-colors leading-snug">
+                                      <h4 className="text-xs font-bold text-textPrimary group-hover:text-primary transition-colors leading-snug font-sans">
                                         {course.name}
                                       </h4>
-                                      <p className="text-[10px] text-textSecondary mt-0.5 leading-relaxed font-semibold">
+                                      <p className="text-[10px] text-textSecondary mt-1 leading-relaxed font-semibold font-sans">
                                         {course.description}
                                       </p>
                                     </div>

@@ -7,24 +7,51 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+
 // Check if PostgreSQL environment variable exists (excluding local mock values)
 const hasDatabaseUrl = typeof process !== 'undefined' && 
                        !!process.env.DATABASE_URL && 
                        process.env.DATABASE_URL !== 'postgresql://postgres:postgres@localhost:5432/aurenza';
 
+export const canWriteToMockDb = (): boolean => {
+  if (typeof process === 'undefined') return false;
+  const isVercel = process.env.VERCEL === '1' || !!process.env.NOW_REGION;
+  const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME || !!process.env.LAMBDA_TASK_ROOT;
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  if (isVercel || isLambda || isProduction) {
+    return false;
+  }
+  
+  // Guard for /var/task or /opt folders which are typically read-only lambda layers
+  const mockPath = path.join(process.cwd(), 'prisma', 'db_mock.json');
+  if (mockPath.startsWith('/var/task') || mockPath.startsWith('/opt')) {
+    return false;
+  }
+  
+  return true;
+};
+
 let prismaInstance: any;
 
+// Initialize Prisma Client only if DATABASE_URL is set
 if (hasDatabaseUrl) {
   try {
     prismaInstance = globalForPrisma.prisma || new PrismaClient();
     if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prismaInstance;
+    
+    // Trigger auto-seeding asynchronously
+    ensureDatabaseSeeded(prismaInstance).catch(err => {
+      console.error('[Aurenza Database] Auto-seeding background task failed:', err);
+    });
   } catch (err) {
-    console.error('[Aurenza Database] Failed to initialize live Prisma Client, falling back to mock.', err);
+    console.error('[Aurenza Database] Failed to initialize live Prisma Client.', err);
     prismaInstance = null;
   }
 }
 
-export const USE_LOCAL_MOCK = process.env.USE_LOCAL_MOCK === 'false' ? false : !hasDatabaseUrl;
+export const USE_LOCAL_MOCK = isProd ? false : (process.env.USE_LOCAL_MOCK === 'false' ? false : !hasDatabaseUrl);
 console.log(`[Aurenza Database] Mode: ${USE_LOCAL_MOCK ? 'OFFLINE LOCAL JSON FALLBACK' : 'LIVE SUPABASE POSTGRESQL'}`);
 
 // ==========================================
@@ -81,7 +108,8 @@ const DEFAULT_MOCK_DATA = {
     { id: "cat-5", name: "DevOps", slug: "devops" },
     { id: "cat-6", name: "Cyber Security", slug: "cyber-security" },
     { id: "cat-7", name: "Full Stack Development", slug: "full-stack" },
-    { id: "cat-8", name: "Digital Marketing", slug: "digital-marketing" }
+    { id: "cat-8", name: "Digital Marketing", slug: "digital-marketing" },
+    { id: "cat-9", name: "Agile Management", slug: "agile-management" }
   ],
   courses: [
     {
@@ -216,15 +244,21 @@ const DEFAULT_MOCK_DATA = {
   reviews: []
 };
 
-// Ensure prisma folder exists
-const prismaFolder = path.dirname(MOCK_DB_PATH);
-if (!fs.existsSync(prismaFolder)) {
-  fs.mkdirSync(prismaFolder, { recursive: true });
-}
+if (canWriteToMockDb()) {
+  try {
+    // Ensure prisma folder exists
+    const prismaFolder = path.dirname(MOCK_DB_PATH);
+    if (!fs.existsSync(prismaFolder)) {
+      fs.mkdirSync(prismaFolder, { recursive: true });
+    }
 
-// Ensure mock db file exists
-if (!fs.existsSync(MOCK_DB_PATH)) {
-  fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(DEFAULT_MOCK_DATA, null, 2), 'utf-8');
+    // Ensure mock db file exists
+    if (!fs.existsSync(MOCK_DB_PATH)) {
+      fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(DEFAULT_MOCK_DATA, null, 2), 'utf-8');
+    }
+  } catch (err: any) {
+    console.warn('[Aurenza Database] Failed to initialize mock database files:', err.message);
+  }
 }
 
 // Read/write helpers for Mock Database
@@ -238,7 +272,15 @@ const readMockDb = (): any => {
 };
 
 const writeMockDb = (data: any) => {
-  fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  if (!canWriteToMockDb()) {
+    throw new Error("[Aurenza Database] Database writes are disabled: Local filesystem is read-only or running in a serverless production environment. Please configure DATABASE_URL.");
+  }
+  try {
+    fs.writeFileSync(MOCK_DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err: any) {
+    console.error('[Aurenza Database] Failed to write mock DB to filesystem:', err);
+    throw new Error(`[Aurenza Database] Write failed: ${err.message}`);
+  }
 };
 
 // ==========================================
@@ -464,6 +506,197 @@ const withTimeout = (promise: Promise<any>, errorMessage: string): Promise<any> 
   ]);
 };
 
+// Auto-seeding database validator
+async function ensureDatabaseSeeded(prisma: any) {
+  try {
+    // 1. Check if category count is less than 9 or Project Management course count is not exactly 15
+    const categoryCount = await prisma.category.count();
+    const pmCourseCount = await prisma.course.count({ where: { categoryId: 'cat-1' } });
+    if (categoryCount >= 9 && pmCourseCount === 15) {
+      return; // Already seeded and updated
+    }
+
+    console.log('[Aurenza Database] Live database has missing categories or outdated courses. Starting auto-seeding...');
+
+    const categoriesData = [
+      { id: "cat-1", name: "Project Management", slug: "project-management" },
+      { id: "cat-2", name: "Data Science", slug: "data-science" },
+      { id: "cat-3", name: "AI & Machine Learning", slug: "ai-machine-learning" },
+      { id: "cat-4", name: "Cloud Computing", slug: "cloud" },
+      { id: "cat-5", name: "DevOps", slug: "devops" },
+      { id: "cat-6", name: "Cyber Security", slug: "cyber-security" },
+      { id: "cat-7", name: "Full Stack Development", slug: "full-stack" },
+      { id: "cat-8", name: "Digital Marketing", slug: "digital-marketing" },
+      { id: "cat-9", name: "Agile Management", slug: "agile-management" }
+    ];
+
+    for (const cat of categoriesData) {
+      await prisma.category.upsert({
+        where: { id: cat.id },
+        update: { name: cat.name, slug: cat.slug },
+        create: cat
+      });
+    }
+
+    // Seed Trainers
+    const trainersData = [
+      { id: "trainer-1", name: "Dr. Ramesh Kumar", email: "trainer@aurenzaacademy.com", avatar: "RK", bio: "Ex-Amazon Senior Java Architect", specialty: "Java Full Stack & System Design" },
+      { id: "trainer-2", name: "Sarah D'Souza", email: "sarah@aurenzaacademy.com", avatar: "SD", bio: "UI Architect & Framer Expert", specialty: "React, Next.js, and CSS Systems" }
+    ];
+    for (const trainer of trainersData) {
+      await prisma.trainer.upsert({
+        where: { id: trainer.id },
+        update: { name: trainer.name, email: trainer.email, avatar: trainer.avatar, bio: trainer.bio, specialty: trainer.specialty },
+        create: trainer
+      });
+    }
+
+    // Seed Core Courses
+    const coreCourses = [
+      {
+        id: "course-java",
+        name: "Java Full Stack Development",
+        slug: "java-full-stack-development",
+        categoryId: "cat-7",
+        duration: "6 months",
+        level: "Beginner -> Advanced",
+        price: 34999,
+        rating: 4.8,
+        reviewsCount: 342,
+        image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
+        mentorName: "Dr. Ramesh Kumar",
+        mentorExp: "12+ Years Exp at Oracle & Amazon",
+        mentorAvatar: "R",
+        mentorBio: "Ex-Amazon Senior Engineer specializing in high-performance Java systems.",
+        syllabus: JSON.stringify([
+          { module: "Module 1: Core Java Programming", details: "OOP principles, Collections Framework, Exception Handling, Multithreading & Stream API." },
+          { module: "Module 2: Advanced Java & Database", details: "JDBC, MySQL foundations, Hibernate ORM, and database connection pools." },
+          { module: "Module 3: Enterprise Spring Framework", details: "Spring Core, Spring Boot, Spring Data JPA, and RESTful Microservices." },
+          { module: "Module 4: Frontend Integration", details: "HTML5, CSS3, JavaScript ES6, and connecting React frontends with Spring Boot." },
+          { module: "Module 5: Testing, Security & Cloud", details: "JUnit testing, Spring Security, JWT, Docker, and AWS deployment." }
+        ]),
+        faqs: JSON.stringify([
+          { q: "Are there any prerequisites for this course?", a: "No, this course starts completely from scratch. Basic programming familiarity is helpful but not mandatory." },
+          { q: "Is there a placement assistance guarantee?", a: "Yes! We offer extensive mock interview sessions, resume polishing, and referrals with 500+ corporate hiring partners." }
+        ])
+      },
+      {
+        id: "course-frontend",
+        name: "Frontend Development (React & Next.js)",
+        slug: "frontend-development-react-nextjs",
+        categoryId: "cat-7",
+        duration: "4 months",
+        level: "Beginner",
+        price: 24999,
+        rating: 4.9,
+        reviewsCount: 289,
+        image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=800&q=80",
+        mentorName: "Sarah D'Souza",
+        mentorExp: "8+ Years Exp at Adobe & Flipkart",
+        mentorAvatar: "S",
+        mentorBio: "UI Architect focused on rendering optimization, custom animations, Framer Motion, and design systems.",
+        syllabus: JSON.stringify([
+          { module: "Module 1: UI Core & Layouts", details: "Semantic HTML5, CSS Flexbox & Grid, Responsive Design, and Tailwind CSS." },
+          { module: "Module 2: Modern JavaScript (ES6+)", details: "DOM manipulation, Asynchronous programming, Fetch API, and Functional structures." },
+          { module: "Module 3: Deep React Foundations", details: "Virtual DOM, JSX, State & Props, Custom Hooks, Context API, and State Managers." },
+          { module: "Module 4: Modern Production Next.js", details: "App Router, Server Actions, SSR vs SSG, Routing, SEO optimization, and Image components." }
+        ]),
+        faqs: JSON.stringify([
+          { q: "Will I build real projects?", a: "Absolutely! You will build 6 real-world web applications including a premium e-commerce portal and a SaaS dashboard." }
+        ])
+      },
+      {
+        id: "course-aiml",
+        name: "AI & Machine Learning Engineering",
+        slug: "ai-machine-learning-engineering",
+        categoryId: "cat-3",
+        duration: "5 months",
+        level: "Intermediate",
+        price: 44999,
+        rating: 4.9,
+        reviewsCount: 198,
+        image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80",
+        mentorName: "Dr. Vivek Sharma",
+        mentorExp: "Ph.D. in AI, ex-Google Brain Scientist",
+        mentorAvatar: "V",
+        mentorBio: "Researcher focused on NLP transformer models, generative architectures, and scaling neural network computing parameters.",
+        syllabus: JSON.stringify([
+          { module: "Module 1: Mathematical Foundations", details: "Calculus optimization, Gradient Descent, Vector Calculus, and Probability." },
+          { module: "Module 2: Deep Learning & Neural Networks", details: "Perceptrons, Backpropagation, MLP, and TensorFlow/PyTorch ecosystems." },
+          { module: "Module 3: Computer Vision (CV)", details: "CNNs, Image Segmentation, OpenCV, YOLO model object detection." },
+          { module: "Module 4: Natural Language Processing (NLP)", details: "LSTMs, Transformers, Attention mechanism, HuggingFace transformers, and LLM fine-tuning." }
+        ]),
+        faqs: JSON.stringify([
+          { q: "Can I do this course part-time?", a: "Yes! All lectures are live-streamed on weekends and recorded in 4K resolution for asynchronous self-paced review." }
+        ])
+      }
+    ];
+
+    for (const course of coreCourses) {
+      await prisma.course.upsert({
+        where: { id: course.id },
+        update: course,
+        create: course
+      });
+    }
+
+    // Load generated courses
+    const generatedCourses = require('./generated_array.json');
+    for (const course of generatedCourses) {
+      await prisma.course.upsert({
+        where: { id: course.id },
+        update: {
+          name: course.name,
+          slug: course.slug,
+          categoryId: course.categoryId,
+          duration: course.duration,
+          level: course.level,
+          price: parseFloat(course.price) || 0.0,
+          rating: parseFloat(course.rating) || 5.0,
+          reviewsCount: parseInt(course.reviewsCount) || 0,
+          image: course.image,
+          mentorName: course.mentorName,
+          mentorExp: course.mentorExp,
+          mentorAvatar: course.mentorAvatar,
+          mentorBio: course.mentorBio,
+          syllabus: typeof course.syllabus === 'string' ? course.syllabus : JSON.stringify(course.syllabus || []),
+          faqs: typeof course.faqs === 'string' ? course.faqs : JSON.stringify(course.faqs || [])
+        },
+        create: {
+          id: course.id,
+          name: course.name,
+          slug: course.slug,
+          categoryId: course.categoryId,
+          duration: course.duration,
+          level: course.level,
+          price: parseFloat(course.price) || 0.0,
+          rating: parseFloat(course.rating) || 5.0,
+          reviewsCount: parseInt(course.reviewsCount) || 0,
+          image: course.image,
+          mentorName: course.mentorName,
+          mentorExp: course.mentorExp,
+          mentorAvatar: course.mentorAvatar,
+          mentorBio: course.mentorBio,
+          syllabus: typeof course.syllabus === 'string' ? course.syllabus : JSON.stringify(course.syllabus || []),
+          faqs: typeof course.faqs === 'string' ? course.faqs : JSON.stringify(course.faqs || [])
+        }
+      });
+    }
+
+    // Clean up any extra course records in the database
+    const allCourseIds = [...coreCourses.map((c: any) => c.id), ...generatedCourses.map((c: any) => c.id)];
+    await prisma.course.deleteMany({
+      where: {
+        id: { notIn: allCourseIds }
+      }
+    });
+
+    console.log('[Aurenza Database] Live database auto-seeding completed successfully.');
+  } catch (err) {
+    console.error('[Aurenza Database] Live database auto-seeding failed:', err);
+  }
+}
+
 // Unified resilient database client proxy with automatic local JSON fallback
 const createResilientDbProxy = () => {
   const liveDb = prismaInstance;
@@ -471,6 +704,11 @@ const createResilientDbProxy = () => {
 
   return new Proxy({}, {
     get: (target, propName: string) => {
+      // In production/Vercel, we only use live database if it is initialized.
+      if (isProd && liveDb) {
+        return liveDb[propName];
+      }
+
       if (USE_LOCAL_MOCK || liveDbDisabled || !liveDb) {
         return (mockDb as any)[propName];
       }
@@ -508,9 +746,18 @@ const createResilientDbProxy = () => {
 
           if (typeof liveMethod === 'function') {
             return async (...args: any[]) => {
+              const isWrite = ['create', 'update', 'delete', 'upsert', 'deleteMany', 'updateMany'].includes(method);
+              
+              if (isWrite && !canWriteToMockDb() && !liveDb) {
+                throw new Error(`[Aurenza Database] Write operation '${method}' on '${propName}' rejected: Live database client is not initialized and mock database writes are disabled in production.`);
+              }
+              
               try {
                 if (liveDbDisabled) {
                   if (mockMethod && typeof mockMethod === 'function') {
+                    if (isWrite && !canWriteToMockDb()) {
+                      throw new Error(`[Aurenza Database] Write operation '${method}' on '${propName}' rejected: Circuit breaker is active and mock database writes are disabled in production.`);
+                    }
                     return await mockMethod(...args);
                   }
                   return null;
@@ -519,10 +766,13 @@ const createResilientDbProxy = () => {
                   liveMethod.apply(modelTarget, args),
                   `Querying ${propName}.${method}`
                 );
-              } catch (err) {
+              } catch (err: any) {
                 console.error(`[Aurenza Database] Live query failed on ${propName}.${method}, enabling offline circuit breaker:`, err);
                 liveDbDisabled = true;
                 if (mockMethod && typeof mockMethod === 'function') {
+                  if (isWrite && !canWriteToMockDb()) {
+                    throw new Error(`[Aurenza Database] Write operation '${method}' on '${propName}' rejected: Live database connection failed and mock database writes are disabled in production. Original error: ${err.message}`);
+                  }
                   return await mockMethod(...args);
                 }
                 throw err;

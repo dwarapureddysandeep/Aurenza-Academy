@@ -349,3 +349,40 @@ model OneOnOneRequest {
 
   @@map("one_on_one_requests")
 }
+
+model CertificationCategory {
+  id           String                @id @default(uuid())
+  name         String
+  slug         String                @unique
+  description  String?
+  icon         String?
+  displayOrder Int                   @default(0)
+  isActive     Boolean               @default(true)
+  courses      CertificationCourse[]
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  @@map("certification_categories")
+}
+
+model CertificationCourse {
+  id                    String                @id @default(uuid())
+  categoryId            String
+  category              CertificationCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  title                 String
+  slug                  String                @unique
+  shortDescription      String?
+  duration              String
+  level                 String
+  certificationProvider String?
+  image                 String
+  displayOrder          Int                   @default(0)
+  isFeatured            Boolean               @default(false)
+  isPopular             Boolean               @default(false)
+  isActive              Boolean               @default(true)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@map("certification_courses")
+}
+

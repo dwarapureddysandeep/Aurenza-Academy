@@ -48,6 +48,8 @@ export default async function AdminDashboardPage() {
   const contactRequests = await db.contactRequest.findMany({ orderBy: { createdAt: 'desc' } });
   const notificationSettings = await db.notificationSetting.findMany();
   const notificationLogs = await db.notificationLog.findMany({ orderBy: { createdAt: 'desc' }, take: 100 });
+  const certificationCategories = await db.certificationCategory.findMany({ orderBy: { displayOrder: 'asc' } });
+  const certificationCourses = await db.certificationCourse.findMany({ orderBy: { displayOrder: 'asc' } });
 
   return (
     <div className="min-h-screen bg-sectionBg text-textPrimary py-12 px-4 sm:px-6 lg:px-8 font-sans">
@@ -112,6 +114,8 @@ export default async function AdminDashboardPage() {
           homepageContent={homepageContent}
           oneOnOneRequests={oneOnOneRequests}
           contactRequests={contactRequests}
+          certificationCategories={certificationCategories}
+          certificationCourses={certificationCourses}
         />
 
       </div>

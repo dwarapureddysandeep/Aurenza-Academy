@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface CourseFilterGridProps {
   initialCourses: any[];
+  initialCategories?: any[];
   searchParam?: string;
   initialCategory?: string;
   limit?: number;
@@ -15,6 +16,7 @@ interface CourseFilterGridProps {
 
 export default function CourseFilterGrid({ 
   initialCourses, 
+  initialCategories = [],
   searchParam = '', 
   initialCategory = 'All',
   limit,
@@ -38,8 +40,19 @@ export default function CourseFilterGrid({
     setSelectedCategory(initialCategory || 'All');
   }, [initialCategory]);
 
-  // Map category tabs exactly like Upgrad screenshot 2
+  // Generate dynamic category tabs
   const categories = [
+    { label: 'All Courses', value: 'All' },
+    ...initialCategories
+      .filter(cat => cat.isActive !== false)
+      .map(cat => ({
+        label: cat.name,
+        value: cat.slug
+      }))
+  ];
+
+  // If no initialCategories are passed, fallback to defaults
+  const fallbackCategories = [
     { label: 'All Courses', value: 'All' },
     { label: 'Agile Management', value: 'Agile' },
     { label: 'Project Management', value: 'Project' },
@@ -51,6 +64,8 @@ export default function CourseFilterGrid({
     { label: 'AI & Machine Learning', value: 'AI' },
     { label: 'Software Testing', value: 'Testing' }
   ];
+
+  const activeCategoriesList = initialCategories.length > 0 ? categories : fallbackCategories;
 
   // Sort priority flagship courses to the top
   const prioritySlugs = [
@@ -93,10 +108,13 @@ export default function CourseFilterGrid({
     'cat-9': 'Agile Management'
   };
 
-  const normalizedCourses = (initialCourses || []).map(course => ({
-    ...course,
-    categoryName: course.categoryName || categoryMap[course.categoryId] || 'Professional Certification'
-  }));
+  const normalizedCourses = (initialCourses || [])
+    .filter(course => course.isActive !== false)
+    .map(course => ({
+      ...course,
+      name: course.name || course.title, // Support both course models (title vs name)
+      categoryName: course.categoryName || (course.category && course.category.name) || categoryMap[course.categoryId] || 'Professional Certification'
+    }));
 
   const sortedCourses = [...normalizedCourses].sort((a, b) => {
     const indexA = prioritySlugs.indexOf(a.slug);
@@ -105,6 +123,11 @@ export default function CourseFilterGrid({
     if (indexA !== -1 && indexB !== -1) return indexA - indexB;
     if (indexA !== -1) return -1;
     if (indexB !== -1) return 1;
+    
+    // Sort by displayOrder if defined
+    if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+      return a.displayOrder - b.displayOrder;
+    }
     return 0;
   });
 
@@ -113,12 +136,21 @@ export default function CourseFilterGrid({
     // Category match
     const categoryMatch = selectedCategory === 'All'
       ? true
-      : selectedCategory === 'Project'
-        ? course.categoryName === 'Project Management'
-        : selectedCategory === 'Agile'
-          ? course.categoryName === 'Agile Management'
-          : course.categoryName.toLowerCase().includes(selectedCategory.toLowerCase()) || 
-            course.name.toLowerCase().includes(selectedCategory.toLowerCase());
+      : course.categoryId === selectedCategory ||
+        (course.category && (course.category.id === selectedCategory || course.category.slug === selectedCategory || course.category.name === selectedCategory)) ||
+        (course.categoryName && (
+          course.categoryName === selectedCategory || 
+          course.categoryName.toLowerCase().includes(selectedCategory.toLowerCase()) || 
+          course.categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-') === selectedCategory.toLowerCase()
+        )) ||
+        // Fallback checks for legacy hardcoded string values
+        (selectedCategory === 'Project' && course.categoryName === 'Project Management') ||
+        (selectedCategory === 'Agile' && course.categoryName === 'Agile Management') ||
+        (selectedCategory === 'Data' && course.categoryName === 'Data Science') ||
+        (selectedCategory === 'Cloud' && course.categoryName === 'Cloud Computing') ||
+        (selectedCategory === 'Full Stack' && course.categoryName === 'Full Stack Development') ||
+        (selectedCategory === 'Cyber' && course.categoryName === 'Cyber Security') ||
+        (selectedCategory === 'AI' && course.categoryName === 'AI & Machine Learning');
 
     // Search query match
     const searchMatch = searchQuery.trim() === ''
@@ -130,7 +162,7 @@ export default function CourseFilterGrid({
   });
 
   let displayCourses = [...filteredCourses];
-  if (selectedCategory === 'Project') {
+  if (selectedCategory === 'Project' || selectedCategory === 'project-management') {
     displayCourses.sort((a, b) => {
       const idxA = pmSlugsOrder.indexOf(a.slug);
       const idxB = pmSlugsOrder.indexOf(b.slug);
@@ -163,7 +195,7 @@ export default function CourseFilterGrid({
           
           {/* Scrollable category list */}
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1 px-2 flex-1 scroll-smooth">
-            {categories.map((cat, idx) => {
+            {activeCategoriesList.map((cat, idx) => {
               const isActive = selectedCategory === cat.value;
               return (
                 <button

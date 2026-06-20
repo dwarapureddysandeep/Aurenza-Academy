@@ -16,7 +16,15 @@ export default async function CoursesCatalogPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const search = resolvedParams?.search || '';
   const category = resolvedParams?.category || '';
-  const courses = await db.course.findMany();
+  const certificationCategories = await db.certificationCategory.findMany({
+    where: { isActive: true },
+    orderBy: { displayOrder: 'asc' }
+  });
+  const certificationCourses = await db.certificationCourse.findMany({
+    where: { isActive: true },
+    orderBy: { displayOrder: 'asc' },
+    include: { category: true }
+  });
 
   return (
     <div className="min-h-screen bg-white text-textPrimary py-16 px-4 sm:px-6 lg:px-8 font-sans relative">
@@ -39,7 +47,12 @@ export default async function CoursesCatalogPage({ searchParams }: PageProps) {
 
         {/* Dynamic Catalog Filter Grid */}
         <Suspense fallback={<div className="text-center py-12 text-xs font-bold text-textSecondary animate-pulse">Loading course catalog...</div>}>
-          <CourseFilterGrid initialCourses={courses} searchParam={search} initialCategory={category} />
+          <CourseFilterGrid 
+            initialCourses={certificationCourses} 
+            initialCategories={certificationCategories} 
+            searchParam={search} 
+            initialCategory={category} 
+          />
         </Suspense>
 
       </div>

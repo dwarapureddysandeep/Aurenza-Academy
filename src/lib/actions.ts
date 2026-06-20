@@ -1548,3 +1548,258 @@ export async function submitContactRequest(formData: any) {
   }
 }
 
+// ==========================================
+// CERTIFICATION CATEGORIES ACTIONS
+// ==========================================
+
+export async function saveCertificationCategoryAction(categoryData: any) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    const { id, name, slug, description, icon, displayOrder, isActive } = categoryData;
+    if (!name) {
+      return { success: false, error: "Category name is required." };
+    }
+
+    const categorySlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    const dataObj = {
+      name,
+      slug: categorySlug,
+      description: description || "",
+      icon: icon || "Zap",
+      displayOrder: parseInt(displayOrder) || 0,
+      isActive: isActive === undefined ? true : !!isActive
+    };
+
+    let savedCategory;
+    if (id) {
+      savedCategory = await db.certificationCategory.update({
+        where: { id },
+        data: dataObj
+      });
+    } else {
+      savedCategory = await db.certificationCategory.create({
+        data: dataObj
+      });
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/courses');
+
+    return { success: true, category: savedCategory };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to save category." };
+  }
+}
+
+export async function deleteCertificationCategoryAction(id: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    await db.certificationCategory.delete({ where: { id } });
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/courses');
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete category." };
+  }
+}
+
+export async function updateCategoryOrdersAction(orders: { id: string, displayOrder: number }[]) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+
+    await db.$transaction(
+      orders.map(o => db.certificationCategory.update({
+        where: { id: o.id },
+        data: { displayOrder: o.displayOrder }
+      }))
+    );
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/courses');
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to update category orders." };
+  }
+}
+
+export async function toggleCategoryActiveAction(id: string, isActive: boolean) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    await db.certificationCategory.update({
+      where: { id },
+      data: { isActive }
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/courses');
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to toggle category status." };
+  }
+}
+
+// ==========================================
+// CERTIFICATION COURSES ACTIONS
+// ==========================================
+
+export async function saveCertificationCourseAction(courseData: any) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    const { id, categoryId, title, slug, shortDescription, duration, level, certificationProvider, image, displayOrder, isFeatured, isPopular, isActive } = courseData;
+    if (!title || !categoryId || !duration || !level) {
+      return { success: false, error: "Title, Category, Duration, and Level are required fields." };
+    }
+
+    const courseSlug = slug || title.toLowerCase().replace(/[®™]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    const dataObj = {
+      categoryId,
+      title,
+      slug: courseSlug,
+      shortDescription: shortDescription || "",
+      duration,
+      level,
+      certificationProvider: certificationProvider || "",
+      image: image || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80",
+      displayOrder: parseInt(displayOrder) || 0,
+      isFeatured: !!isFeatured,
+      isPopular: !!isPopular,
+      isActive: isActive === undefined ? true : !!isActive
+    };
+
+    let savedCourse;
+    if (id) {
+      savedCourse = await db.certificationCourse.update({
+        where: { id },
+        data: dataObj
+      });
+    } else {
+      savedCourse = await db.certificationCourse.create({
+        data: dataObj
+      });
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
+    return { success: true, course: savedCourse };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to save course." };
+  }
+}
+
+export async function deleteCertificationCourseAction(id: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    await db.certificationCourse.delete({ where: { id } });
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to delete course." };
+  }
+}
+
+export async function updateCourseOrdersAction(orders: { id: string, displayOrder: number }[]) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+
+    await db.$transaction(
+      orders.map(o => db.certificationCourse.update({
+        where: { id: o.id },
+        data: { displayOrder: o.displayOrder }
+      }))
+    );
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to update course orders." };
+  }
+}
+
+export async function toggleCourseActiveAction(id: string, isActive: boolean) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    await db.certificationCourse.update({
+      where: { id },
+      data: { isActive }
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to toggle course status." };
+  }
+}
+
+export async function moveCourseCategoryAction(id: string, categoryId: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'ADMIN') {
+      return { success: false, error: "Unauthorized access: Administrator role required." };
+    }
+    await db.certificationCourse.update({
+      where: { id },
+      data: { categoryId }
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+    revalidatePath('/courses');
+    revalidatePath('/courses/[slug]', 'layout');
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to move course category." };
+  }
+}
+
+

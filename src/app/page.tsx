@@ -21,6 +21,15 @@ export default async function HomePage() {
   const batches = await db.batch.findMany();
   const webinars = await db.webinar.findMany();
   const homepageContent = await db.homepageContent.findMany();
+  const certificationCategories = await db.certificationCategory.findMany({
+    where: { isActive: true },
+    orderBy: { displayOrder: 'asc' }
+  });
+  const certificationCourses = await db.certificationCourse.findMany({
+    where: { isActive: true },
+    orderBy: { displayOrder: 'asc' },
+    include: { category: true }
+  });
 
   return (
     <div className="w-full bg-white text-textPrimary overflow-x-hidden font-sans">
@@ -57,7 +66,12 @@ export default async function HomePage() {
 
           {/* Dynamic filtering courses catalog */}
           {/* Dynamic filtering courses catalog limited to 6 on homepage */}
-          <CourseFilterGrid initialCourses={courses} limit={6} isHomepage={true} />
+          <CourseFilterGrid 
+            initialCourses={certificationCourses} 
+            initialCategories={certificationCategories} 
+            limit={6} 
+            isHomepage={true} 
+          />
 
         </div>
       </section>

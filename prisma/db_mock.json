@@ -1280,7 +1280,7 @@
       "mentorBio": "Advanced SAFe Practice Consultant and Enterprise Agilist.",
       "syllabus": "[]",
       "faqs": "[]",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     }
   ],
   "trainers": [
@@ -1309,7 +1309,7 @@
       "bio": "ITIL Certified Enterprise Mentor",
       "specialty": "ITIL Frameworks",
       "avatar": "AL",
-      "createdAt": "2026-06-19T17:44:30.926Z"
+      "createdAt": "2026-06-20T12:29:43.732Z"
     },
     {
       "id": "trainer-chad-williams",
@@ -1318,7 +1318,7 @@
       "bio": "Advanced SAFe Consultant & Agilist",
       "specialty": "Agile & SAFe Frameworks",
       "avatar": "CH",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     },
     {
       "id": "trainer-visakh-rj",
@@ -1327,7 +1327,7 @@
       "bio": "Project Management Professional Trainer",
       "specialty": "PMP & Project Management",
       "avatar": "VI",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     },
     {
       "id": "trainer-sudipt-singh",
@@ -1336,7 +1336,7 @@
       "bio": "Senior Project Delivery Specialist",
       "specialty": "PMP & Agile Delivery",
       "avatar": "SU",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     }
   ],
   "batches": [
@@ -1349,7 +1349,7 @@
       "seatsTotal": 30,
       "seatsLeft": 30,
       "linkZoom": "https://zoom.us/j/mock-meeting",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     },
     {
       "id": "batch-aspc-1",
@@ -1360,7 +1360,7 @@
       "seatsTotal": 30,
       "seatsLeft": 30,
       "linkZoom": "https://zoom.us/j/mock-meeting",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     },
     {
       "id": "batch-pmp-1",
@@ -1371,7 +1371,7 @@
       "seatsTotal": 30,
       "seatsLeft": 30,
       "linkZoom": "https://zoom.us/j/mock-meeting",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     },
     {
       "id": "batch-pmp-2",
@@ -1382,7 +1382,7 @@
       "seatsTotal": 30,
       "seatsLeft": 30,
       "linkZoom": "https://zoom.us/j/mock-meeting",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     },
     {
       "id": "batch-pmp-3",
@@ -1393,7 +1393,7 @@
       "seatsTotal": 30,
       "seatsLeft": 30,
       "linkZoom": "https://zoom.us/j/mock-meeting",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     },
     {
       "id": "batch-pmp-4",
@@ -1404,7 +1404,7 @@
       "seatsTotal": 30,
       "seatsLeft": 30,
       "linkZoom": "https://zoom.us/j/mock-meeting",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     },
     {
       "id": "batch-pmp-5",
@@ -1415,7 +1415,7 @@
       "seatsTotal": 30,
       "seatsLeft": 30,
       "linkZoom": "https://zoom.us/j/mock-meeting",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     },
     {
       "id": "batch-pmp-6",
@@ -1426,7 +1426,7 @@
       "seatsTotal": 30,
       "seatsLeft": 30,
       "linkZoom": "https://zoom.us/j/mock-meeting",
-      "createdAt": "2026-06-19T17:44:30.928Z"
+      "createdAt": "2026-06-20T12:29:43.733Z"
     }
   ],
   "enrollments": [

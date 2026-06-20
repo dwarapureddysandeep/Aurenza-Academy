@@ -398,6 +398,242 @@ async function main() {
     });
   }
 
+  // 14. Seed Certification Categories and Courses
+  console.log('[Seeder] Seeding certification categories and courses...');
+  const certCategories = [
+    {
+      name: "Agile Management",
+      slug: "agile-management",
+      description: "CSM, CSPO, A-CSM, and SAFe certifications to scale team delivery.",
+      icon: "Zap",
+      displayOrder: 0,
+      courses: [
+        "Certified ScrumMaster (CSM)®",
+        "CSPO® Certification",
+        "Gen AI for Scrum Masters",
+        "Generative AI Course for POPM",
+        "Leading SAFe® 6.0 Certification",
+        "Generative AI Course for Project Managers",
+        "Implementing SAFe® 6.0 with SPC Certification",
+        "SAFe® 6.0 Product Owner/Product Manager (POPM)",
+        "SAFe® 6.0 SSM Certification",
+        "SAFe® 6 Release Train Engineer (RTE) Certification",
+        "Professional Scrum Product Owner™ (PSPO)",
+        "ICP Agile Certified Coaching (ICP-ACC)",
+        "Advanced Certified ScrumMaster (A-CSM®)",
+        "Advanced Certified Scrum Product Owner℠ (A-CSPO℠)",
+        "Professional Scrum Master™ I (PSM I) Training"
+      ]
+    },
+    {
+      name: "Project Management",
+      slug: "project-management",
+      description: "PMP, PRINCE2, and CAPM pathways for delivery leaders.",
+      icon: "Briefcase",
+      displayOrder: 1,
+      courses: [
+        "PMP® Certification",
+        "PRINCE2® Foundation and Practitioner",
+        "PMI Certified Professional in Managing AI (PMI-CPMAI)™ Certification Course",
+        "PRINCE2® Foundation Course",
+        "Project Management Techniques",
+        "CAPM® Certification",
+        "Program Management Professional (PgMP)® Certification",
+        "PRINCE2® Practitioner",
+        "PRINCE2 Agile® Foundation Certification",
+        "Project Management Masters Certification Program",
+        "PfMP® Certification",
+        "PRINCE2 Agile® Practitioner Certification",
+        "Microsoft® Project 2013",
+        "Oracle Primavera Training",
+        "Microsoft Project 2007/2010"
+      ]
+    },
+    {
+      name: "Data Science & AI",
+      slug: "data-science-ai",
+      description: "Executive and engineering tracks in Gen AI, Agentic AI, and Machine Learning.",
+      icon: "Cpu",
+      displayOrder: 2,
+      courses: [
+        "IIT Kharagpur - Executive Post Graduate Certificate in Generative AI & Agentic AI",
+        "Applied Agentic AI Certification",
+        "AI-Powered Product Management Course",
+        "Generative AI Masters Program",
+        "Microsoft Vibe Coding",
+        "Advanced AI Masters",
+        "Python for AI Engineers",
+        "Enterprise AI Platforms with AWS, Azure & Google Cloud",
+        "Generative AI & Agentic AI Master Program",
+        "Generative AI Foundations Certificate Program",
+        "Generative AI Mastery Certificate for Data Analysis",
+        "Generative AI and Prompt Engineering for Professionals",
+        "Data Analytics with Power BI using AI",
+        "ML Solutions Using Azure Databricks (DP-3014)",
+        "Microsoft Certified: Fabric Data Engineer Associate (DP-700)"
+      ]
+    },
+    {
+      name: "Cloud Computing",
+      slug: "cloud-computing",
+      description: "AWS, Azure, and Google Cloud architect and essentials programs.",
+      icon: "Cloud",
+      displayOrder: 3,
+      courses: [
+        "AWS Certified Solutions Architect – Associate Training",
+        "Azure Solution Architect Certification (AZ-305)",
+        "AWS Cloud Architect Masters Program Certification",
+        "The Machine Learning Pipeline on AWS Training",
+        "Cloud Engineer Bootcamp",
+        "Planning and Designing Databases on AWS Certification",
+        "Developing on AWS",
+        "Deep Learning on AWS Training",
+        "AWS Technical Essentials",
+        "AWS Cloud Practitioner Essentials Certification Training",
+        "Security Engineering on AWS Certification Training",
+        "Azure Data Engineer Master's Program",
+        "Architecting on AWS Accelerator Certification",
+        "Data Warehousing on AWS Training",
+        "Microsoft Azure Fundamentals"
+      ]
+    },
+    {
+      name: "Web Development",
+      slug: "web-development",
+      description: "Full Stack, Frontend, Backend, UI/UX bootcamps and technologies.",
+      icon: "Code",
+      displayOrder: 4,
+      courses: [
+        "Generative AI Mastery Certificate for Software Development",
+        "Full-Stack Development Bootcamp",
+        "Front-End Development Bootcamp",
+        "Back-End Development Bootcamp",
+        "Full-Stack Developer Bootcamp [Java]",
+        "React JS Training",
+        "Node.js",
+        "Angular",
+        "JavaScript",
+        "UI/UX Design",
+        "UI-UX Bootcamp",
+        "Java/J2EE and SOA",
+        "MEAN Stack Development",
+        "Microsoft SharePoint 2013",
+        "PHP and MySQL"
+      ]
+    },
+    {
+      name: "DevOps",
+      slug: "devops",
+      description: "Docker, Kubernetes, Ansible, and continuous delivery pipelines.",
+      icon: "Activity",
+      displayOrder: 5,
+      courses: [
+        "Get Started with DevOps Course with Certification",
+        "Docker and Kubernetes",
+        "DevOps",
+        "Kubernetes",
+        "Certified Kubernetes Administrator Certification Training",
+        "DevOps Foundation® Certification",
+        "Docker",
+        "DevOps Leader (DOL)®",
+        "Ansible",
+        "OpenStack",
+        "Chef",
+        "Puppet",
+        "Project-Based DevOps Bootcamp",
+        "Continuous Delivery Ecosystem Foundation (CDEF)℠",
+        "DevSecOps Foundation (DSOF)℠"
+      ]
+    },
+    {
+      name: "IT Security",
+      slug: "it-security",
+      description: "Ethical Hacking, CISA, CISSP, and cybersecurity master programs.",
+      icon: "Shield",
+      displayOrder: 6,
+      courses: [
+        "Certified Ethical Hacking Course (CEH® v13)",
+        "CISA®",
+        "CISM®",
+        "Cybersecurity Master's Program",
+        "CISSP®",
+        "COBIT® 5 Foundation",
+        "PCI - Data Security Standard",
+        "Microsoft Security, Compliance, and Identity Fundamentals Certification",
+        "CCSP Certification Training",
+        "CyberSAFE Certification",
+        "Cybersecurity Certificate Program - Purdue",
+        "CIPP/E Certification Training"
+      ]
+    },
+    {
+      name: "Business Management",
+      slug: "business-management",
+      description: "CBAP, ECBA, Business Analytics, and growth strategies.",
+      icon: "LineChart",
+      displayOrder: 7,
+      courses: [
+        "Certified Business Analysis Professional™ (CBAP®) Certification",
+        "Entry Certificate in Business Analysis™ (ECBA™)",
+        "Gen AI Course for Business Analysts",
+        "Generative AI Mastery Certificate for Managerial Excellence",
+        "Professional Certificate Program in Business Analytics & Consulting",
+        "Business Growth Strategies",
+        "Agile Business Analysis",
+        "CCBA® Prep Course",
+        "PMI-PBA® Certification",
+        "Business Case Writing",
+        "IREB Certified Professional for Requirements Engineering"
+      ]
+    }
+  ];
+
+  for (const cat of certCategories) {
+    const dbCat = await prisma.certificationCategory.upsert({
+      where: { slug: cat.slug },
+      update: { name: cat.name, description: cat.description, icon: cat.icon, displayOrder: cat.displayOrder },
+      create: { name: cat.name, slug: cat.slug, description: cat.description, icon: cat.icon, displayOrder: cat.displayOrder }
+    });
+
+    let displayOrder = 0;
+    for (const courseTitle of cat.courses) {
+      const cleanTitle = courseTitle.replace(/[®™]/g, '');
+      const courseSlug = cleanTitle.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+      
+      const provider = courseTitle.includes('AWS') ? 'AWS' :
+                       courseTitle.includes('Azure') || courseTitle.includes('Fabric') || courseTitle.includes('Microsoft') ? 'Microsoft' :
+                       courseTitle.includes('ScrumMaster') || courseTitle.includes('CSM') || courseTitle.includes('CSPO') || courseTitle.includes('Scrum') ? 'Scrum Alliance' :
+                       courseTitle.includes('SAFe') ? 'Scaled Agile' :
+                       courseTitle.includes('PRINCE2') ? 'AXELOS' :
+                       courseTitle.includes('PMP') || courseTitle.includes('CAPM') || courseTitle.includes('PgMP') || courseTitle.includes('PfMP') || courseTitle.includes('PMI') ? 'PMI' :
+                       courseTitle.includes('IIT') || courseTitle.includes('Kharagpur') ? 'IIT Kharagpur' : 'Aurenza Academy';
+
+      await prisma.certificationCourse.upsert({
+        where: { slug: courseSlug },
+        update: {
+          title: courseTitle,
+          categoryId: dbCat.id,
+          displayOrder: displayOrder,
+        },
+        create: {
+          categoryId: dbCat.id,
+          title: courseTitle,
+          slug: courseSlug,
+          shortDescription: `Master ${courseTitle} skills with live interactive cohort sessions.`,
+          duration: courseTitle.includes('Bootcamp') || courseTitle.includes('Program') || courseTitle.includes('Masters') ? '3-6 months' : '4-8 weeks',
+          level: courseTitle.includes('Advanced') || courseTitle.includes('Practitioner') || courseTitle.includes('Leader') ? 'Intermediate' : 'Beginner',
+          certificationProvider: provider,
+          image: `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80`,
+          displayOrder: displayOrder,
+          isActive: true
+        }
+      });
+      displayOrder++;
+    }
+  }
+
   console.log('[Seeder] Database seeding completed successfully!');
 }
 

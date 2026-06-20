@@ -22,7 +22,16 @@ import {
   saveFaqAction,
   deleteFaqAction,
   saveHomepageContentBulkAction,
-  updateOneOnOneRequestStatusAction
+  updateOneOnOneRequestStatusAction,
+  saveCertificationCategoryAction,
+  deleteCertificationCategoryAction,
+  updateCategoryOrdersAction,
+  toggleCategoryActiveAction,
+  saveCertificationCourseAction,
+  deleteCertificationCourseAction,
+  updateCourseOrdersAction,
+  toggleCourseActiveAction,
+  moveCourseCategoryAction
 } from '@/lib/actions';
 import { parseBatchData } from '@/lib/utils';
 import {
@@ -30,7 +39,7 @@ import {
   Calendar, Sparkles, Home, BookOpen, Folder, Users, CreditCard,
   MessageSquare, FileText, Settings, Trash2, Edit, Check, X,
   Search, TrendingUp, RefreshCw, BarChart2, ShieldAlert, CheckCircle, HelpCircle, ChevronRight,
-  Bell, Video, Upload
+  Bell, Video, Upload, Eye, EyeOff
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import LoadingSpinner from './loading-spinner';
@@ -53,6 +62,8 @@ interface AdminCrmWidgetProps {
   homepageContent?: any[];
   oneOnOneRequests?: any[];
   contactRequests?: any[];
+  certificationCategories?: any[];
+  certificationCourses?: any[];
 }
 
 interface FileUploadWidgetProps {
@@ -140,12 +151,14 @@ export default function AdminCrmWidget({
   faqs = [],
   homepageContent = [],
   oneOnOneRequests = [],
-  contactRequests = []
+  contactRequests = [],
+  certificationCategories = [],
+  certificationCourses = []
 }: AdminCrmWidgetProps) {
   const router = useRouter();
   
   // Tabs
-  type TabType = 'overview' | 'enquiries' | 'courses' | 'categories' | 'tutors' | 'batches' | 'students' | 'payments' | 'testimonials' | 'corporate' | 'notifications' | 'settings' | 'homepageCms' | 'faqs' | 'oneOnOne' | 'contacts';
+  type TabType = 'overview' | 'enquiries' | 'courses' | 'categories' | 'tutors' | 'batches' | 'students' | 'payments' | 'testimonials' | 'corporate' | 'notifications' | 'settings' | 'homepageCms' | 'faqs' | 'oneOnOne' | 'contacts' | 'certCategories' | 'certCourses';
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -310,6 +323,54 @@ export default function AdminCrmWidget({
       }));
     }
   }, [notificationSettings]);
+
+  // Certification Categories State
+  const [certCategoriesList, setCertCategoriesList] = useState<any[]>(certificationCategories);
+  const [editingCertCategory, setEditingCertCategory] = useState<any | null>(null);
+  const [certCategoryForm, setCertCategoryForm] = useState({
+    id: '',
+    name: '',
+    slug: '',
+    description: '',
+    icon: 'Zap',
+    displayOrder: '0',
+    isActive: true
+  });
+
+  // Certification Courses State
+  const [certCoursesList, setCertCoursesList] = useState<any[]>(certificationCourses);
+  const [editingCertCourse, setEditingCertCourse] = useState<any | null>(null);
+  const [certCourseForm, setCertCourseForm] = useState({
+    id: '',
+    categoryId: '',
+    title: '',
+    slug: '',
+    shortDescription: '',
+    duration: '4-8 weeks',
+    level: 'Beginner',
+    certificationProvider: 'Aurenza Academy',
+    image: '',
+    displayOrder: '0',
+    isFeatured: false,
+    isPopular: false,
+    isActive: true
+  });
+
+  const [selectedCourseCategoryFilter, setSelectedCourseCategoryFilter] = useState<string>('all');
+
+  useEffect(() => {
+    setCertCategoriesList(certificationCategories);
+  }, [certificationCategories]);
+
+  useEffect(() => {
+    setCertCoursesList(certificationCourses);
+  }, [certificationCourses]);
+
+  useEffect(() => {
+    if (certCategoriesList.length > 0 && !certCourseForm.categoryId) {
+      setCertCourseForm(prev => ({ ...prev, categoryId: certCategoriesList[0]?.id || '' }));
+    }
+  }, [certCategoriesList]);
 
   // Lead Notes state for CRM leads
   const [leadNotes, setLeadNotes] = useState<Record<string, string>>({});
@@ -830,6 +891,251 @@ export default function AdminCrmWidget({
     }
   };
 
+  // ==========================================
+  // CERTIFICATION CATEGORIES HANDLERS
+  // ==========================================
+  const handleSaveCertCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!certCategoryForm.name.trim()) {
+      toast.error("Category name is required.");
+      return;
+    }
+    setLoading(true);
+    toast.loading("Saving certification category...", { id: "action" });
+    const res = await saveCertificationCategoryAction(certCategoryForm);
+    setLoading(false);
+    if (res.success) {
+      toast.success("Category details saved!", { id: "action" });
+      setEditingCertCategory(null);
+      setCertCategoryForm({
+        id: '',
+        name: '',
+        slug: '',
+        description: '',
+        icon: 'Zap',
+        displayOrder: '0',
+        isActive: true
+      });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to save category.", { id: "action" });
+    }
+  };
+
+  const handleDeleteCertCategory = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this category? All courses inside will be deleted!")) return;
+    toast.loading("Deleting category...", { id: "action" });
+    const res = await deleteCertificationCategoryAction(id);
+    if (res.success) {
+      toast.success("Category deleted.", { id: "action" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to delete.", { id: "action" });
+    }
+  };
+
+  const handleToggleCertCategoryActive = async (id: string, isActive: boolean) => {
+    toast.loading("Updating status...", { id: "action" });
+    const res = await toggleCategoryActiveAction(id, isActive);
+    if (res.success) {
+      toast.success("Status updated.", { id: "action" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to update status.", { id: "action" });
+    }
+  };
+
+  // Drag and Drop for Categories
+  const [draggedCatId, setDraggedCatId] = useState<string | null>(null);
+
+  const handleCatDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData('text/plain', id);
+    setDraggedCatId(id);
+  };
+
+  const handleCatDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleCatDrop = async (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData('text/plain') || draggedCatId;
+    if (!sourceId || sourceId === targetId) return;
+
+    const sourceIdx = certCategoriesList.findIndex(c => c.id === sourceId);
+    const targetIdx = certCategoriesList.findIndex(c => c.id === targetId);
+    if (sourceIdx === -1 || targetIdx === -1) return;
+
+    const updated = [...certCategoriesList];
+    const [moved] = updated.splice(sourceIdx, 1);
+    updated.splice(targetIdx, 0, moved);
+
+    const reordered = updated.map((c, idx) => ({
+      ...c,
+      displayOrder: idx
+    }));
+
+    setCertCategoriesList(reordered);
+
+    toast.loading("Updating category order...", { id: "action" });
+    const payload = reordered.map((c, idx) => ({ id: c.id, displayOrder: idx }));
+    const res = await updateCategoryOrdersAction(payload);
+    if (res.success) {
+      toast.success("Order updated!", { id: "action" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to update order", { id: "action" });
+    }
+    setDraggedCatId(null);
+  };
+
+  // ==========================================
+  // CERTIFICATION COURSES HANDLERS
+  // ==========================================
+  const handleSaveCertCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!certCourseForm.title.trim()) {
+      toast.error("Course title is required.");
+      return;
+    }
+    if (!certCourseForm.categoryId) {
+      toast.error("Category alignment is required.");
+      return;
+    }
+    setLoading(true);
+    toast.loading("Saving certification course...", { id: "action" });
+    const res = await saveCertificationCourseAction(certCourseForm);
+    setLoading(false);
+    if (res.success) {
+      toast.success("Course details saved!", { id: "action" });
+      setEditingCertCourse(null);
+      setCertCourseForm({
+        id: '',
+        categoryId: certCategoriesList[0]?.id || '',
+        title: '',
+        slug: '',
+        shortDescription: '',
+        duration: '4-8 weeks',
+        level: 'Beginner',
+        certificationProvider: 'Aurenza Academy',
+        image: '',
+        displayOrder: '0',
+        isFeatured: false,
+        isPopular: false,
+        isActive: true
+      });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to save course.", { id: "action" });
+    }
+  };
+
+  const handleDeleteCertCourse = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this course?")) return;
+    toast.loading("Deleting course...", { id: "action" });
+    const res = await deleteCertificationCourseAction(id);
+    if (res.success) {
+      toast.success("Course deleted successfully.", { id: "action" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to delete.", { id: "action" });
+    }
+  };
+
+  const handleToggleCertCourseActive = async (id: string, isActive: boolean) => {
+    toast.loading("Updating status...", { id: "action" });
+    const res = await toggleCourseActiveAction(id, isActive);
+    if (res.success) {
+      toast.success("Status updated.", { id: "action" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to update status.", { id: "action" });
+    }
+  };
+
+  const handleToggleCertCourseFeatured = async (course: any) => {
+    toast.loading("Updating featured status...", { id: "action" });
+    const res = await saveCertificationCourseAction({
+      ...course,
+      isFeatured: !course.isFeatured
+    });
+    if (res.success) {
+      toast.success("Featured status updated.", { id: "action" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to update featured status.", { id: "action" });
+    }
+  };
+
+  const handleToggleCertCoursePopular = async (course: any) => {
+    toast.loading("Updating popular status...", { id: "action" });
+    const res = await saveCertificationCourseAction({
+      ...course,
+      isPopular: !course.isPopular
+    });
+    if (res.success) {
+      toast.success("Popular status updated.", { id: "action" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to update popular status.", { id: "action" });
+    }
+  };
+
+  // Drag and Drop for Courses
+  const [draggedCourseId, setDraggedCourseId] = useState<string | null>(null);
+
+  const handleCourseDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData('text/plain', id);
+    setDraggedCourseId(id);
+  };
+
+  const handleCourseDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleCourseDrop = async (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData('text/plain') || draggedCourseId;
+    if (!sourceId || sourceId === targetId) return;
+
+    if (selectedCourseCategoryFilter === 'all') {
+      toast.error("Please filter by a category to reorder courses.");
+      return;
+    }
+
+    const filtered = certCoursesList.filter(c => c.categoryId === selectedCourseCategoryFilter);
+    const sourceIdx = filtered.findIndex(c => c.id === sourceId);
+    const targetIdx = filtered.findIndex(c => c.id === targetId);
+    if (sourceIdx === -1 || targetIdx === -1) return;
+
+    const updatedFiltered = [...filtered];
+    const [moved] = updatedFiltered.splice(sourceIdx, 1);
+    updatedFiltered.splice(targetIdx, 0, moved);
+
+    const reorderedFiltered = updatedFiltered.map((c, idx) => ({
+      ...c,
+      displayOrder: idx
+    }));
+
+    const updatedMaster = certCoursesList.map(c => {
+      const reorderedItem = reorderedFiltered.find(r => r.id === c.id);
+      return reorderedItem ? reorderedItem : c;
+    });
+
+    setCertCoursesList(updatedMaster);
+
+    toast.loading("Updating course order...", { id: "action" });
+    const payload = reorderedFiltered.map((c, idx) => ({ id: c.id, displayOrder: idx }));
+    const res = await updateCourseOrdersAction(payload);
+    if (res.success) {
+      toast.success("Course order updated!", { id: "action" });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Failed to update order", { id: "action" });
+    }
+    setDraggedCourseId(null);
+  };
+
   // Filtered Lists
   const filteredCourses = courses.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const filteredLeads = initialLeads.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()) || l.course.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -855,6 +1161,8 @@ export default function AdminCrmWidget({
           { id: 'enquiries', label: 'Course Enquiries', icon: <Users className="w-4 h-4" /> },
           { id: 'courses', label: 'Courses Hub', icon: <BookOpen className="w-4 h-4" /> },
           { id: 'categories', label: 'Categories Hub', icon: <Folder className="w-4 h-4" /> },
+          { id: 'certCategories', label: 'Cert Categories', icon: <Folder className="w-4 h-4 text-purple-600 animate-pulse" /> },
+          { id: 'certCourses', label: 'Cert Courses', icon: <BookOpen className="w-4 h-4 text-purple-600 animate-pulse" /> },
           { id: 'tutors', label: 'Tutors & Mentors', icon: <Users className="w-4 h-4" /> },
           { id: 'batches', label: 'Batches & Live', icon: <Calendar className="w-4 h-4" /> },
           { id: 'testimonials', label: 'Reviews & Quotes', icon: <MessageSquare className="w-4 h-4" /> },
@@ -1456,6 +1764,575 @@ export default function AdminCrmWidget({
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB: CERTIFICATION CATEGORIES MANAGER */}
+        {/* ======================================================== */}
+        {activeTab === 'certCategories' && (
+          <div className="space-y-6">
+            <div className="border-b border-borderLight pb-4 flex justify-between items-center">
+              <div>
+                <h3 className="text-base font-extrabold heading flex items-center gap-2">
+                  <Folder className="w-5 h-5 text-primary animate-pulse" /> Certification Categories Manager
+                </h3>
+                <p className="text-xs text-textSecondary mt-1">Manage certification categories. Drag & drop rows to reorder display order.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveCertCategory} className="bg-sectionBg border border-borderLight p-6 rounded-2xl space-y-4 animate-fade-up">
+              <h4 className="text-xs font-black uppercase text-primary tracking-wider">
+                {editingCertCategory ? 'Edit Category' : 'Create Certification Category'}
+              </h4>
+              <div className="grid gap-4 sm:grid-cols-2 text-xs">
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-textSecondary uppercase tracking-wide">Category Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={certCategoryForm.name}
+                    onChange={(e) => setCertCategoryForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="e.g. Agile Management"
+                    className="glass-input"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-textSecondary uppercase tracking-wide">URL Slug (Optional)</label>
+                  <input
+                    type="text"
+                    value={certCategoryForm.slug}
+                    onChange={(e) => setCertCategoryForm(prev => ({ ...prev, slug: e.target.value }))}
+                    placeholder="Auto-generated if left blank"
+                    className="glass-input"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-textSecondary uppercase tracking-wide">Category Icon (Lucide Icon name)</label>
+                  <select
+                    value={certCategoryForm.icon}
+                    onChange={(e) => setCertCategoryForm(prev => ({ ...prev, icon: e.target.value }))}
+                    className="glass-input bg-white text-textPrimary"
+                  >
+                    {["Zap", "Code", "Shield", "Activity", "BookOpen", "Briefcase", "LineChart", "Folder", "Settings", "HelpCircle"].map(iconName => (
+                      <option key={iconName} value={iconName}>{iconName}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-bold text-textSecondary uppercase tracking-wide">Display Order</label>
+                  <input
+                    type="number"
+                    value={certCategoryForm.displayOrder}
+                    onChange={(e) => setCertCategoryForm(prev => ({ ...prev, displayOrder: e.target.value }))}
+                    placeholder="e.g. 0"
+                    className="glass-input"
+                  />
+                </div>
+                <div className="sm:col-span-2 flex flex-col gap-1.5">
+                  <label className="font-bold text-textSecondary uppercase tracking-wide">Description</label>
+                  <textarea
+                    value={certCategoryForm.description}
+                    onChange={(e) => setCertCategoryForm(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Provide a brief description of the category..."
+                    rows={2}
+                    className="glass-input"
+                  />
+                </div>
+                <div className="sm:col-span-2 flex items-center gap-2 py-1">
+                  <input
+                    type="checkbox"
+                    id="catIsActive"
+                    checked={certCategoryForm.isActive}
+                    onChange={(e) => setCertCategoryForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                    className="w-4 h-4 text-primary border-borderLight rounded focus:ring-primary"
+                  />
+                  <label htmlFor="catIsActive" className="text-xs font-bold text-textPrimary cursor-pointer select-none">
+                    Category is Active (Visible on Public Pages)
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end">
+                {editingCertCategory && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingCertCategory(null);
+                      setCertCategoryForm({
+                        id: '',
+                        name: '',
+                        slug: '',
+                        description: '',
+                        icon: 'Zap',
+                        displayOrder: '0',
+                        isActive: true
+                      });
+                    }}
+                    className="px-4 py-2 border border-borderLight rounded-xl text-textPrimary hover:bg-white transition text-xs font-bold"
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-primary text-white font-black rounded-xl hover:bg-primaryHover hover:shadow-glowPurple transition text-xs"
+                >
+                  {editingCertCategory ? 'Save Changes' : 'Create Category'}
+                </button>
+              </div>
+            </form>
+
+            <div className="border border-borderLight rounded-2xl overflow-hidden shadow-soft text-xs bg-white">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-sectionBg border-b border-borderLight font-extrabold text-[10px] text-textSecondary uppercase tracking-wider">
+                    <th className="p-4 w-12 text-center">Move</th>
+                    <th className="p-4">Category Name</th>
+                    <th className="p-4">URL Slug</th>
+                    <th className="p-4 text-center">Display Order</th>
+                    <th className="p-4 text-center">Status</th>
+                    <th className="p-4 text-right font-bold pr-6">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-borderLight">
+                  {certCategoriesList.map((cat) => (
+                    <tr
+                      key={cat.id}
+                      draggable
+                      onDragStart={(e) => handleCatDragStart(e, cat.id)}
+                      onDragOver={handleCatDragOver}
+                      onDrop={(e) => handleCatDrop(e, cat.id)}
+                      className={`hover:bg-sectionBg/40 transition cursor-move ${draggedCatId === cat.id ? 'bg-primary/5 opacity-50' : ''}`}
+                    >
+                      <td className="p-4 text-center text-textSecondary select-none">☰</td>
+                      <td className="p-4">
+                        <div className="font-extrabold text-textPrimary heading flex items-center gap-2">
+                          <span className="p-1 bg-primary/10 rounded-lg text-primary text-[10px] font-bold">
+                            {cat.icon}
+                          </span>
+                          {cat.name}
+                        </div>
+                      </td>
+                      <td className="p-4 text-textSecondary font-mono">{cat.slug}</td>
+                      <td className="p-4 text-center font-bold">{cat.displayOrder}</td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => handleToggleCertCategoryActive(cat.id, !cat.isActive)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold transition ${
+                            cat.isActive
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                              : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+                          }`}
+                        >
+                          {cat.isActive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                          {cat.isActive ? 'Active' : 'Inactive'}
+                        </button>
+                      </td>
+                      <td className="p-4 text-right space-x-2 pr-6">
+                        <button
+                          onClick={() => {
+                            setEditingCertCategory(cat.id);
+                            setCertCategoryForm({
+                              id: cat.id,
+                              name: cat.name,
+                              slug: cat.slug,
+                              description: cat.description || '',
+                              icon: cat.icon || 'Zap',
+                              displayOrder: cat.displayOrder.toString(),
+                              isActive: cat.isActive
+                            });
+                          }}
+                          className="p-1.5 border border-borderLight rounded-lg hover:border-primary hover:text-primary transition"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCertCategory(cat.id)}
+                          className="p-1.5 border border-borderLight rounded-lg hover:border-dangerRed hover:text-dangerRed transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB: CERTIFICATION COURSES MANAGER */}
+        {/* ======================================================== */}
+        {activeTab === 'certCourses' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-borderLight pb-4">
+              <div>
+                <h3 className="text-base font-extrabold heading flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-primary animate-pulse" /> Certification Courses Manager
+                </h3>
+                <p className="text-xs text-textSecondary mt-1">Manage certification courses. Drag and drop rows to reorder (select a category filter first).</p>
+              </div>
+              {!editingCertCourse && (
+                <button
+                  onClick={() => {
+                    setEditingCertCourse('new');
+                    setCertCourseForm({
+                      id: '',
+                      categoryId: certCategoriesList[0]?.id || '',
+                      title: '',
+                      slug: '',
+                      shortDescription: '',
+                      duration: '4-8 weeks',
+                      level: 'Beginner',
+                      certificationProvider: 'Aurenza Academy',
+                      image: '',
+                      displayOrder: '0',
+                      isFeatured: false,
+                      isPopular: false,
+                      isActive: true
+                    });
+                  }}
+                  className="px-4 py-2 bg-primary text-white text-xs font-black rounded-xl hover:bg-primaryHover transition flex items-center gap-1.5 shadow-soft"
+                >
+                  <PlusCircle className="w-4 h-4" /> Add Certification Course
+                </button>
+              )}
+            </div>
+
+            {editingCertCourse ? (
+              <form onSubmit={handleSaveCertCourse} className="bg-sectionBg border border-borderLight p-6 rounded-2xl space-y-4 animate-fade-up">
+                <div className="flex justify-between items-center border-b border-borderLight pb-3">
+                  <h4 className="text-xs font-black uppercase text-primary tracking-wider">
+                    {editingCertCourse === 'new' ? 'Create Certification Course' : `Edit: ${certCourseForm.title}`}
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setEditingCertCourse(null)}
+                    className="p-1 rounded-full hover:bg-white text-textSecondary transition"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 text-xs">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Category Alignment</label>
+                    <select
+                      value={certCourseForm.categoryId}
+                      onChange={(e) => setCertCourseForm(prev => ({ ...prev, categoryId: e.target.value }))}
+                      className="glass-input bg-white text-textPrimary"
+                    >
+                      {certCategoriesList.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Course Title</label>
+                    <input
+                      type="text"
+                      required
+                      value={certCourseForm.title}
+                      onChange={(e) => setCertCourseForm(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="e.g. Certified ScrumMaster (CSM)®"
+                      className="glass-input"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">URL Slug (Optional)</label>
+                    <input
+                      type="text"
+                      value={certCourseForm.slug}
+                      onChange={(e) => setCertCourseForm(prev => ({ ...prev, slug: e.target.value }))}
+                      placeholder="Auto-generated if left blank"
+                      className="glass-input"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Duration</label>
+                    <input
+                      type="text"
+                      required
+                      value={certCourseForm.duration}
+                      onChange={(e) => setCertCourseForm(prev => ({ ...prev, duration: e.target.value }))}
+                      placeholder="e.g. 4-8 weeks, 3-6 months"
+                      className="glass-input"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Level</label>
+                    <select
+                      value={certCourseForm.level}
+                      onChange={(e) => setCertCourseForm(prev => ({ ...prev, level: e.target.value }))}
+                      className="glass-input bg-white text-textPrimary"
+                    >
+                      {['Beginner', 'Intermediate', 'Advanced'].map(l => (
+                        <option key={l} value={l}>{l}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Certification Provider</label>
+                    <input
+                      type="text"
+                      value={certCourseForm.certificationProvider}
+                      onChange={(e) => setCertCourseForm(prev => ({ ...prev, certificationProvider: e.target.value }))}
+                      placeholder="e.g. Scrum Alliance, PMI, Scaled Agile"
+                      className="glass-input"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 flex flex-col gap-1.5">
+                    <FileUploadWidget
+                      label="Course Banner Image"
+                      value={certCourseForm.image}
+                      onChange={(url) => setCertCourseForm(prev => ({ ...prev, image: url }))}
+                      bucket="courses"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Short Description</label>
+                    <textarea
+                      value={certCourseForm.shortDescription}
+                      onChange={(e) => setCertCourseForm(prev => ({ ...prev, shortDescription: e.target.value }))}
+                      placeholder="Brief overview of what students will learn..."
+                      rows={2}
+                      className="glass-input"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-bold text-textSecondary uppercase tracking-wide">Display Order</label>
+                    <input
+                      type="number"
+                      value={certCourseForm.displayOrder}
+                      onChange={(e) => setCertCourseForm(prev => ({ ...prev, displayOrder: e.target.value }))}
+                      placeholder="e.g. 0"
+                      className="glass-input"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 grid grid-cols-3 gap-4 py-2 border-t border-borderLight mt-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="courseIsActive"
+                        checked={certCourseForm.isActive}
+                        onChange={(e) => setCertCourseForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                        className="w-4 h-4 text-primary border-borderLight rounded focus:ring-primary"
+                      />
+                      <label htmlFor="courseIsActive" className="text-xs font-bold text-textPrimary cursor-pointer select-none">
+                        Active (Visible)
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="courseIsFeatured"
+                        checked={certCourseForm.isFeatured}
+                        onChange={(e) => setCertCourseForm(prev => ({ ...prev, isFeatured: e.target.checked }))}
+                        className="w-4 h-4 text-primary border-borderLight rounded focus:ring-primary"
+                      />
+                      <label htmlFor="courseIsFeatured" className="text-xs font-bold text-textPrimary cursor-pointer select-none">
+                        Featured Banner
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="courseIsPopular"
+                        checked={certCourseForm.isPopular}
+                        onChange={(e) => setCertCourseForm(prev => ({ ...prev, isPopular: e.target.checked }))}
+                        className="w-4 h-4 text-primary border-borderLight rounded focus:ring-primary"
+                      />
+                      <label htmlFor="courseIsPopular" className="text-xs font-bold text-textPrimary cursor-pointer select-none">
+                        Popular Tag
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 justify-end pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingCertCourse(null)}
+                    className="px-4 py-2 border border-borderLight rounded-xl text-textPrimary hover:bg-white transition text-xs font-bold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 bg-primary text-white font-black rounded-xl hover:bg-primaryHover hover:shadow-glowPurple transition text-xs"
+                  >
+                    {editingCertCourse === 'new' ? 'Create Course' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                {/* Filters Row */}
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white border border-borderLight p-4 rounded-2xl shadow-soft">
+                  <div className="flex items-center gap-2 w-full sm:w-auto text-xs">
+                    <span className="font-bold text-textSecondary uppercase tracking-wider shrink-0">Filter Category:</span>
+                    <select
+                      value={selectedCourseCategoryFilter}
+                      onChange={(e) => setSelectedCourseCategoryFilter(e.target.value)}
+                      className="glass-input bg-white text-textPrimary pr-8 min-w-[200px]"
+                    >
+                      <option value="all">All Categories</option>
+                      {certCategoriesList.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="relative w-full sm:w-80 text-xs">
+                    <input
+                      type="text"
+                      placeholder="Search courses..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="glass-input pl-9 w-full"
+                    />
+                    <Search className="w-4 h-4 text-textSecondary absolute left-3 top-3" />
+                  </div>
+                </div>
+
+                {/* Courses Table */}
+                <div className="border border-borderLight rounded-2xl overflow-hidden shadow-soft text-xs bg-white">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-sectionBg border-b border-borderLight font-extrabold text-[10px] text-textSecondary uppercase tracking-wider">
+                        <th className="p-4 w-12 text-center">Move</th>
+                        <th className="p-4">Course Details</th>
+                        <th className="p-4">Category</th>
+                        <th className="p-4 text-center">Duration / Level</th>
+                        <th className="p-4 text-center">Badges</th>
+                        <th className="p-4 text-center">Status</th>
+                        <th className="p-4 text-right pr-6">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-borderLight">
+                      {certCoursesList
+                        .filter(c => selectedCourseCategoryFilter === 'all' || c.categoryId === selectedCourseCategoryFilter)
+                        .filter(c => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                        .map((course) => {
+                          const cat = certCategoriesList.find(cat => cat.id === course.categoryId);
+                          return (
+                            <tr
+                              key={course.id}
+                              draggable={selectedCourseCategoryFilter !== 'all'}
+                              onDragStart={(e) => handleCourseDragStart(e, course.id)}
+                              onDragOver={handleCourseDragOver}
+                              onDrop={(e) => handleCourseDrop(e, course.id)}
+                              className={`hover:bg-sectionBg/40 transition ${
+                                selectedCourseCategoryFilter !== 'all' ? 'cursor-move' : ''
+                              } ${draggedCourseId === course.id ? 'bg-primary/5 opacity-50' : ''}`}
+                            >
+                              <td className="p-4 text-center text-textSecondary select-none">
+                                {selectedCourseCategoryFilter !== 'all' ? '☰' : '─'}
+                              </td>
+                              <td className="p-4">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    src={course.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80'}
+                                    alt={course.title}
+                                    className="w-10 h-10 object-cover rounded-lg border border-borderLight shrink-0"
+                                  />
+                                  <div>
+                                    <div className="font-extrabold text-textPrimary heading leading-tight">{course.title}</div>
+                                    <div className="text-[10px] text-textSecondary font-mono mt-0.5">{course.slug}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="p-4 font-semibold text-textSecondary">{cat?.name || 'Unassigned'}</td>
+                              <td className="p-4 text-center space-y-0.5">
+                                <div className="font-bold text-textPrimary">{course.duration}</div>
+                                <div className="text-[10px] text-textSecondary">{course.level}</div>
+                              </td>
+                              <td className="p-4 text-center space-y-1">
+                                <button
+                                  onClick={() => handleToggleCertCourseFeatured(course)}
+                                  className={`inline-flex items-center px-2 py-0.5 rounded text-[8px] font-extrabold transition mr-1 ${
+                                    course.isFeatured
+                                      ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                      : 'bg-slate-100 text-slate-400 hover:text-slate-600'
+                                  }`}
+                                >
+                                  ★ Featured
+                                </button>
+                                <button
+                                  onClick={() => handleToggleCertCoursePopular(course)}
+                                  className={`inline-flex items-center px-2 py-0.5 rounded text-[8px] font-extrabold transition ${
+                                    course.isPopular
+                                      ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                                      : 'bg-slate-100 text-slate-400 hover:text-slate-600'
+                                  }`}
+                                >
+                                  ♥ Popular
+                                </button>
+                              </td>
+                              <td className="p-4 text-center">
+                                <button
+                                  onClick={() => handleToggleCertCourseActive(course.id, !course.isActive)}
+                                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold transition ${
+                                    course.isActive
+                                      ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                      : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+                                  }`}
+                                >
+                                  {course.isActive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                                  {course.isActive ? 'Active' : 'Inactive'}
+                                </button>
+                              </td>
+                              <td className="p-4 text-right space-x-2 pr-6">
+                                <button
+                                  onClick={() => {
+                                    setEditingCertCourse(course.id);
+                                    setCertCourseForm({
+                                      id: course.id,
+                                      categoryId: course.categoryId,
+                                      title: course.title,
+                                      slug: course.slug,
+                                      shortDescription: course.shortDescription || '',
+                                      duration: course.duration,
+                                      level: course.level,
+                                      certificationProvider: course.certificationProvider || '',
+                                      image: course.image || '',
+                                      displayOrder: course.displayOrder.toString(),
+                                      isFeatured: course.isFeatured,
+                                      isPopular: course.isPopular,
+                                      isActive: course.isActive
+                                    });
+                                  }}
+                                  className="p-1.5 border border-borderLight rounded-lg hover:border-primary hover:text-primary transition"
+                                >
+                                  <Edit className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteCertCourse(course.id)}
+                                  className="p-1.5 border border-borderLight rounded-lg hover:border-dangerRed hover:text-dangerRed transition"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -87,6 +87,7 @@ model Course {
   payments          Payment[]
   certificates      Certificate[]
   reviews           Review[]
+  assignments       Assignment[]
   createdAt         DateTime     @default(now())
 
   @@map("courses")
@@ -121,6 +122,7 @@ model Batch {
   batchType    String   @default("Weekend Batch") // "Weekend Batch", "Weekday Batch"
   trainingMode String   @default("Online Classroom") // "Online Classroom", "In-Person Classroom"
   status       String   @default("Upcoming") // "Upcoming", "Ongoing", "Completed"
+  attendances  Attendance[]
   createdAt    DateTime @default(now())
 
   @@map("course_batches")
@@ -265,6 +267,7 @@ model Review {
 model Assignment {
   id          String   @id @default(uuid())
   courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   title       String
   description String?
   dueDate     String
@@ -277,6 +280,7 @@ model Assignment {
 model Attendance {
   id           String   @id @default(uuid())
   batchId      String
+  batch        Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
   date         String
   presentCount Int      @default(0)
   absentCount  Int      @default(0)

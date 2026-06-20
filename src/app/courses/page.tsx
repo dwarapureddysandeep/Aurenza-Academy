@@ -3,6 +3,8 @@ import { db } from '@/lib/db';
 import CourseFilterGrid from '@/components/course-filter-grid';
 import { GraduationCap } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "Professional IT & AI Certifications Catalog - Aurenza Academy",
   description: "Explore 28 enterprise-grade career certification cohorts in Java Full Stack, Spring Boot Microservices, Next.js frontend architectures, and Machine Learning pipelines."

@@ -1,6 +1,13 @@
 import { PrismaClient } from '@prisma/client';
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
+
+function hashPassword(password: string): string {
+  if (!password) return '';
+  const salt = process.env.JWT_SECRET || 'aurenza_academy_secure_salt_98765';
+  return crypto.createHmac('sha256', salt).update(password).digest('hex');
+}
 
 async function main() {
   console.log('[Seeder] Starting database seeding...');
@@ -29,7 +36,7 @@ async function main() {
       id: "user-admin",
       name: "Aurenza Admin",
       email: "info@aurenzaacademy.com",
-      password: "aur_hash_aurenza_admin", // Mock representation of hashed password
+      password: hashPassword("aurenza_admin"), // Securely hashed password
       phone: "+91 7013057827",
       role: "ADMIN",
       bio: "Executive Academy Administrator",
@@ -43,7 +50,7 @@ async function main() {
       id: "user-student",
       name: "Sandeep Kumar",
       email: "student@aurenzaacademy.com",
-      password: "aur_hash_student_pass",
+      password: hashPassword("student_pass"),
       phone: "+91 9876543210",
       role: "STUDENT",
       bio: "Aspiring Full Stack Engineer",
@@ -57,7 +64,7 @@ async function main() {
       id: "user-trainer",
       name: "Dr. Ramesh Kumar",
       email: "trainer@aurenzaacademy.com",
-      password: "aur_hash_trainer_pass",
+      password: hashPassword("trainer_pass"),
       phone: "+91 9999988888",
       role: "TRAINER",
       bio: "Ex-Amazon Senior Java Architect",
@@ -101,6 +108,51 @@ async function main() {
       specialty: "React, Next.js, and CSS Systems",
     },
   });
+
+  const trainerAlpesh = await prisma.trainer.create({
+    data: {
+      id: "trainer-alpesh",
+      name: "Alpesh Vasant",
+      email: "alpesh@aurenzaacademy.com",
+      avatar: "AV",
+      bio: "Certified ITIL Master Trainer with 10+ years of IT Service Management coaching.",
+      specialty: "ITIL Frameworks",
+    }
+  });
+
+  const trainerChad = await prisma.trainer.create({
+    data: {
+      id: "trainer-chad",
+      name: "Chad Williams",
+      email: "chad@aurenzaacademy.com",
+      avatar: "CW",
+      bio: "SPCT and Principal SAFe Consultant leading enterprise agility transformations.",
+      specialty: "Agile & SAFe Frameworks",
+    }
+  });
+
+  const trainerVisakh = await prisma.trainer.create({
+    data: {
+      id: "trainer-visakh",
+      name: "Visakh R J",
+      email: "visakh@aurenzaacademy.com",
+      avatar: "VR",
+      bio: "PMP Coach and Senior Project Management consultant with 12+ years experience.",
+      specialty: "PMP & Project Management",
+    }
+  });
+
+  const trainerSudipt = await prisma.trainer.create({
+    data: {
+      id: "trainer-sudipt",
+      name: "Sudipt Singh",
+      email: "sudipt@aurenzaacademy.com",
+      avatar: "SS",
+      bio: "Agile Delivery Director and PMP certification instructor.",
+      specialty: "PMP & Agile Delivery",
+    }
+  });
+
 
   // 5. Seed Core Courses
   console.log('[Seeder] Seeding courses...');
@@ -190,6 +242,31 @@ async function main() {
     },
   });
 
+  const courseAspc = await prisma.course.create({
+    data: {
+      id: "course-aspc",
+      name: "Advanced SAFe Practice Consultant (ASPC) Certification",
+      slug: "advanced-safe-practice-consultant-aspc-certification",
+      categoryId: agileCat.id,
+      duration: "4 days",
+      level: "Advanced",
+      price: 59999.0,
+      rating: 4.9,
+      reviewsCount: 120,
+      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80",
+      mentorName: "Chad Williams",
+      mentorExp: "15+ Years Exp in Agile & SAFe Consulting",
+      mentorAvatar: "CW",
+      mentorBio: "SPCT and Principal SAFe Consultant leading enterprise agility transformations.",
+      syllabus: JSON.stringify([
+        { module: "Module 1: Advanced SAFe Principles", details: "Deep dive into SAFe Lean-Agile mindset, SPCT pathways, and value streams." }
+      ]),
+      faqs: JSON.stringify([
+        { q: "Is the exam fee included?", a: "Yes, the first exam attempt fee is included in the course price." }
+      ])
+    }
+  });
+
   console.log('[Seeder] Seeding generated courses...');
   const generatedCourses = require('../src/lib/generated_array.json');
   for (const course of generatedCourses) {
@@ -219,27 +296,145 @@ async function main() {
   console.log('[Seeder] Seeding cohorts...');
   await prisma.batch.create({
     data: {
-      id: "batch-1",
-      courseId: courseJava.id,
-      trainerId: trainer1.id,
-      startDate: "June 15, 2026",
-      timeSlot: "7:00 PM - 9:00 PM IST",
+      id: "batch-itil-1",
+      courseId: "course-itil-foundation-certification",
+      trainerId: "trainer-alpesh",
+      startDate: "June 20, 2026",
+      endDate: "June 28, 2026",
+      timeZone: "IST",
+      timeSlot: "12:30 PM - 04:30 PM IST",
       seatsTotal: 30,
-      seatsLeft: 22,
-      linkZoom: "https://zoom.us/j/mock-java-meeting",
+      seatsLeft: 30,
+      linkZoom: "https://zoom.us/j/mock-itil-meeting",
+      batchType: "Weekend Batch",
+      trainingMode: "Online Classroom",
+      status: "Upcoming"
     },
   });
 
   await prisma.batch.create({
     data: {
-      id: "batch-2",
-      courseId: courseFrontend.id,
-      trainerId: trainer2.id,
-      startDate: "June 10, 2026",
-      timeSlot: "8:00 AM - 10:00 AM IST",
-      seatsTotal: 25,
-      seatsLeft: 18,
-      linkZoom: "https://zoom.us/j/mock-frontend-meeting",
+      id: "batch-aspc-1",
+      courseId: "course-aspc",
+      trainerId: "trainer-chad",
+      startDate: "June 22, 2026",
+      endDate: "June 25, 2026",
+      timeZone: "IST",
+      timeSlot: "05:30 PM - 01:30 AM IST",
+      seatsTotal: 30,
+      seatsLeft: 30,
+      linkZoom: "https://zoom.us/j/mock-aspc-meeting",
+      batchType: "Weekday Batch",
+      trainingMode: "Online Classroom",
+      status: "Upcoming"
+    },
+  });
+
+  await prisma.batch.create({
+    data: {
+      id: "batch-pmp-1",
+      courseId: "course-pmp",
+      trainerId: "trainer-visakh",
+      startDate: "June 27, 2026",
+      endDate: "July 26, 2026",
+      timeZone: "IST",
+      timeSlot: "07:30 PM - 12:00 AM IST",
+      seatsTotal: 30,
+      seatsLeft: 30,
+      linkZoom: "https://zoom.us/j/mock-pmp1-meeting",
+      batchType: "Weekend Batch",
+      trainingMode: "Online Classroom",
+      status: "Upcoming"
+    },
+  });
+
+  await prisma.batch.create({
+    data: {
+      id: "batch-pmp-2",
+      courseId: "course-pmp",
+      trainerId: "trainer-visakh",
+      startDate: "June 29, 2026",
+      endDate: "July 23, 2026",
+      timeZone: "IST",
+      timeSlot: "06:00 AM - 08:20 AM IST",
+      seatsTotal: 30,
+      seatsLeft: 30,
+      linkZoom: "https://zoom.us/j/mock-pmp2-meeting",
+      batchType: "Weekday Batch",
+      trainingMode: "Online Classroom",
+      status: "Upcoming"
+    },
+  });
+
+  await prisma.batch.create({
+    data: {
+      id: "batch-pmp-3",
+      courseId: "course-pmp",
+      trainerId: "trainer-visakh",
+      startDate: "July 06, 2026",
+      endDate: "July 30, 2026",
+      timeZone: "IST",
+      timeSlot: "07:30 PM - 09:30 PM IST",
+      seatsTotal: 30,
+      seatsLeft: 30,
+      linkZoom: "https://zoom.us/j/mock-pmp3-meeting",
+      batchType: "Weekday Batch",
+      trainingMode: "Online Classroom",
+      status: "Upcoming"
+    },
+  });
+
+  await prisma.batch.create({
+    data: {
+      id: "batch-pmp-4",
+      courseId: "course-pmp",
+      trainerId: "trainer-visakh",
+      startDate: "July 11, 2026",
+      endDate: "August 09, 2026",
+      timeZone: "IST",
+      timeSlot: "07:00 AM - 11:30 AM IST",
+      seatsTotal: 30,
+      seatsLeft: 30,
+      linkZoom: "https://zoom.us/j/mock-pmp4-meeting",
+      batchType: "Weekend Batch",
+      trainingMode: "Online Classroom",
+      status: "Upcoming"
+    },
+  });
+
+  await prisma.batch.create({
+    data: {
+      id: "batch-pmp-5",
+      courseId: "course-pmp",
+      trainerId: "trainer-sudipt",
+      startDate: "July 18, 2026",
+      endDate: "August 16, 2026",
+      timeZone: "IST",
+      timeSlot: "07:30 PM - 12:00 AM IST",
+      seatsTotal: 30,
+      seatsLeft: 30,
+      linkZoom: "https://zoom.us/j/mock-pmp5-meeting",
+      batchType: "Weekend Batch",
+      trainingMode: "Online Classroom",
+      status: "Upcoming"
+    },
+  });
+
+  await prisma.batch.create({
+    data: {
+      id: "batch-pmp-6",
+      courseId: "course-pmp",
+      trainerId: "trainer-visakh",
+      startDate: "July 27, 2026",
+      endDate: "August 28, 2026",
+      timeZone: "IST",
+      timeSlot: "01:30 PM - 05:30 PM IST",
+      seatsTotal: 30,
+      seatsLeft: 30,
+      linkZoom: "https://zoom.us/j/mock-pmp6-meeting",
+      batchType: "Weekday Batch",
+      trainingMode: "Online Classroom",
+      status: "Upcoming"
     },
   });
 

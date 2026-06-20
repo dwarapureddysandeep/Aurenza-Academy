@@ -2,7 +2,7 @@ import React from 'react';
 import { db } from '@/lib/db';
 import Testimonials from '@/components/testimonials';
 
-export const revalidate = 60; // Revalidate cache every 60 seconds
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: "Success Stories & Student Reviews | Aurenza Academy",

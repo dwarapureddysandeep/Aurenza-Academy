@@ -12,7 +12,7 @@ import PopularCategories from '@/components/popular-categories';
 import TrendingCourses from '@/components/trending-courses';
 import Testimonials from '@/components/testimonials';
 
-export const revalidate = 60; // Revalidate cache every 60 seconds
+export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   // Fetch dynamic data straight from the database

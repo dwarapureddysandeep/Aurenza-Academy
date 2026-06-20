@@ -8,6 +8,8 @@ import CourseActionsWidget from '@/components/course-actions-widget';
 import ReserveSeatButton from '@/components/reserve-seat-button';
 import { parseBatchData } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

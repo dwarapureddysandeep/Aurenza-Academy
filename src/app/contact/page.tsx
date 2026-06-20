@@ -7,6 +7,8 @@ import FAQAccordion from '@/components/faq-accordion';
 import CounselingButton from '@/components/counseling-button';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: "Contact Us | Aurenza Academy",
   description: "Contact Aurenza Academy for course guidance, certification programs, corporate training, admissions support, and career counseling. Browse FAQs and connect with our advisors."

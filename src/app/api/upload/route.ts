@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getCurrentUser } from '@/lib/actions';
 
 export async function POST(request: Request) {
   try {
+    // Auth check: verify administrator privileges
+    const currentUser = await getCurrentUser();
+    if (!currentUser || currentUser.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized access: Administrative session required.' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const bucket = (formData.get('bucket') as string) || 'courses';

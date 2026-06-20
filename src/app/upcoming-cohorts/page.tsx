@@ -8,7 +8,7 @@ export const metadata = {
   description: "Explore upcoming certification and technology program batches, schedules, and enrollment opportunities at Aurenza Academy."
 };
 
-export const revalidate = 60; // Revalidate cache every 60 seconds
+export const dynamic = 'force-dynamic';
 
 export default async function UpcomingCohortsPage() {
   // Fetch databases straight from DB

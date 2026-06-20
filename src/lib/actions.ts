@@ -6,17 +6,13 @@ import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import crypto from 'crypto';
 
-// Password hashing simulation matching the old DB logic
+// Secure cryptographic password hashing using HMAC-SHA256
 function hashPassword(password: string): string {
   if (!password) return '';
-  let hash = 0;
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return 'aur_hash_' + Math.abs(hash).toString(16);
+  const salt = process.env.JWT_SECRET || 'aurenza_academy_secure_salt_98765';
+  return crypto.createHmac('sha256', salt).update(password).digest('hex');
 }
+
 
 // ==========================================
 // AUTHENTICATION SERVER ACTIONS
@@ -103,10 +99,8 @@ export async function loginUser(formData: any) {
     });
 
     const hashedPassword = hashPassword(password);
-    const isAdminOverride = email.toLowerCase() === 'info@aurenzaacademy.com' && 
-                            (password === 'Aurenza@0210' || password === 'aurenza_admin');
 
-    if (!user || (!isAdminOverride && user.password !== hashedPassword && user.password !== password)) {
+    if (!user || (user.password !== hashedPassword && user.password !== password)) {
       return { success: false, error: "Invalid email or password credentials." };
     }
 

@@ -6,7 +6,7 @@ import { AlertCircle, Users, IndianRupee, Award, Layers, Sparkles } from 'lucide
 import Link from 'next/link';
 import AdminCrmWidget from '@/components/admin-crm-widget';
 
-export const revalidate = 0; // Dynamic server component
+export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
   const user = await getCurrentUser();

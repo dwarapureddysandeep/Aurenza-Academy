@@ -16,15 +16,23 @@ export default async function CoursesCatalogPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const search = resolvedParams?.search || '';
   const category = resolvedParams?.category || '';
-  const certificationCategories = await db.certificationCategory.findMany({
-    where: { isActive: true },
-    orderBy: { displayOrder: 'asc' }
-  });
-  const certificationCourses = await db.certificationCourse.findMany({
-    where: { isActive: true },
-    orderBy: { displayOrder: 'asc' },
-    include: { category: true }
-  });
+  
+  let certificationCategories: any[] = [];
+  let certificationCourses: any[] = [];
+
+  try {
+    certificationCategories = await db.certificationCategory.findMany({
+      where: { isActive: true },
+      orderBy: { displayOrder: 'asc' }
+    });
+    certificationCourses = await db.certificationCourse.findMany({
+      where: { isActive: true },
+      orderBy: { displayOrder: 'asc' },
+      include: { category: true }
+    });
+  } catch (e) {
+    console.error("Failed to load certifications data:", e);
+  }
 
   return (
     <div className="min-h-screen bg-white text-textPrimary py-16 px-4 sm:px-6 lg:px-8 font-sans relative">

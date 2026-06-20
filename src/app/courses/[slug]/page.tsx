@@ -16,68 +16,75 @@ export default async function CourseDetailPage({ params }: PageProps) {
   const { slug } = await params;
 
   // 1. Fetch course details with fallback to dynamic CertificationCourse
-  let course = null;
-  const oldCourse = await db.course.findUnique({
-    where: { slug }
-  });
+  let course: any = null;
+  let batches: any[] = [];
+  let testimonials: any[] = [];
+  let faqs: any[] = [];
 
-  if (oldCourse) {
-    course = oldCourse;
-  } else {
-    const certCourse = await db.certificationCourse.findUnique({
-      where: { slug },
-      include: { category: true }
+  try {
+    const oldCourse = await db.course.findUnique({
+      where: { slug }
     });
 
-    if (certCourse) {
-      // Map CertificationCourse to the layout's expected Course fields
-      course = {
-        id: certCourse.id,
-        name: certCourse.title,
-        slug: certCourse.slug,
-        categoryId: certCourse.categoryId,
-        categoryName: certCourse.category?.name || 'Professional Certification',
-        duration: certCourse.duration,
-        level: certCourse.level,
-        price: 0,
-        rating: 5.0,
-        reviewsCount: 0,
-        image: certCourse.image,
-        brochure: null,
-        description: certCourse.shortDescription || `Master this dynamic ${certCourse.title} certification program mapping directly to international industry guidelines.`,
-        certificationBody: certCourse.certificationProvider || 'Aurenza Academy',
-        skillsCovered: JSON.stringify([certCourse.title, 'Industry Standards', 'Mock Exam Practice']),
-        courseHighlights: JSON.stringify(['Weekend live interactive cohorts', 'Led by active technology directors', 'Direct recruitment referrals']),
-        seoData: null,
-        syllabus: JSON.stringify([
-          { module: "Module 1: Introduction to " + certCourse.title, details: "Overview of the core framework parameters, key terminology definitions, and organizational benefits of achieving certification." },
-          { module: "Module 2: Core Concepts & Practice", details: "Deep dive into applying standard methodologies, worksheets, practical case studies, and corporate workflow exercises." },
-          { module: "Module 3: Certification Preparation", details: "Detailed walkthrough of exam structure, specific syllabus weighting areas, and live reviews of mock exam question papers." }
-        ]),
-        faqs: JSON.stringify([
-          { q: "Is the exam fee included in the program fee?", a: "Yes, the certification exam fee is fully covered by the program enrollment fee." },
-          { q: "What is the format of the cohort session?", a: "Sessions are live interactive classrooms held on weekends with trainer Q&A." }
-        ]),
-        mentorName: "Alpesh Vasant",
-        mentorExp: "15+ Years Experience",
-        mentorAvatar: "AV",
-        mentorBio: "Executive Program Mentor and agile transformation director with extensive experience training over 5,000 corporate professionals globally."
-      };
+    if (oldCourse) {
+      course = oldCourse;
+    } else {
+      const certCourse = await db.certificationCourse.findUnique({
+        where: { slug },
+        include: { category: true }
+      });
+
+      if (certCourse) {
+        // Map CertificationCourse to the layout's expected Course fields
+        course = {
+          id: certCourse.id,
+          name: certCourse.title,
+          slug: certCourse.slug,
+          categoryId: certCourse.categoryId,
+          categoryName: certCourse.category?.name || 'Professional Certification',
+          duration: certCourse.duration,
+          level: certCourse.level,
+          price: 0,
+          rating: 5.0,
+          reviewsCount: 0,
+          image: certCourse.image,
+          brochure: null,
+          description: certCourse.shortDescription || `Master this dynamic ${certCourse.title} certification program mapping directly to international industry guidelines.`,
+          certificationBody: certCourse.certificationProvider || 'Aurenza Academy',
+          skillsCovered: JSON.stringify([certCourse.title, 'Industry Standards', 'Mock Exam Practice']),
+          courseHighlights: JSON.stringify(['Weekend live interactive cohorts', 'Led by active technology directors', 'Direct recruitment referrals']),
+          seoData: null,
+          syllabus: JSON.stringify([
+            { module: "Module 1: Introduction to " + certCourse.title, details: "Overview of the core framework parameters, key terminology definitions, and organizational benefits of achieving certification." },
+            { module: "Module 2: Core Concepts & Practice", details: "Deep dive into applying standard methodologies, worksheets, practical case studies, and corporate workflow exercises." },
+            { module: "Module 3: Certification Preparation", details: "Detailed walkthrough of exam structure, specific syllabus weighting areas, and live reviews of mock exam question papers." }
+          ]),
+          faqs: JSON.stringify([
+            { q: "Is the exam fee included in the program fee?", a: "Yes, the certification exam fee is fully covered by the program enrollment fee." },
+            { q: "What is the format of the cohort session?", a: "Sessions are live interactive classrooms held on weekends with trainer Q&A." }
+          ]),
+          mentorName: "Alpesh Vasant",
+          mentorExp: "15+ Years Experience",
+          mentorAvatar: "AV",
+          mentorBio: "Executive Program Mentor and agile transformation director with extensive experience training over 5,000 corporate professionals globally."
+        };
+      }
     }
+
+    if (course) {
+      batches = await db.batch.findMany({
+        where: { courseId: course.id }
+      });
+    }
+    testimonials = await db.testimonial.findMany();
+    faqs = await db.faq.findMany({ orderBy: { order: 'asc' } });
+  } catch (e) {
+    console.error("Failed to load course details data:", e);
   }
 
   if (!course) {
     notFound();
   }
-
-  // 2. Fetch course batches
-  const batches = await db.batch.findMany({
-    where: { courseId: course.id }
-  });
-
-  // 3. Fetch general testimonials for outcomes section
-  const testimonials = await db.testimonial.findMany();
-  const faqs = await db.faq.findMany({ orderBy: { order: 'asc' } });
 
   // 4. Parse syllabus and FAQs JSON arrays safely
   let syllabusItems = [];

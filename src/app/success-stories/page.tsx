@@ -11,7 +11,12 @@ export const metadata = {
 
 export default async function SuccessStoriesPage() {
   // Fetch dynamic testimonials from database
-  const testimonials = await db.testimonial.findMany();
+  let testimonials: any[] = [];
+  try {
+    testimonials = await db.testimonial.findMany();
+  } catch (e) {
+    console.error("Failed to load testimonials:", e);
+  }
 
   return (
     <div className="w-full bg-white text-textPrimary overflow-x-hidden font-sans">

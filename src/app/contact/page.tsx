@@ -13,7 +13,12 @@ export const metadata = {
 };
 
 export default async function ContactPage() {
-  const faqs = await db.faq.findMany({ orderBy: { order: 'asc' } });
+  let faqs: any[] = [];
+  try {
+    faqs = await db.faq.findMany({ orderBy: { order: 'asc' } });
+  } catch (e) {
+    console.error("Failed to load FAQs:", e);
+  }
   return (
     <div className="min-h-screen bg-white text-textPrimary py-16 px-4 sm:px-6 lg:px-8 font-sans relative overflow-hidden">
       {/* Background glowing bubbles */}

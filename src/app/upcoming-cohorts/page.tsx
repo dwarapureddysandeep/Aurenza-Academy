@@ -12,10 +12,19 @@ export const revalidate = 60; // Revalidate cache every 60 seconds
 
 export default async function UpcomingCohortsPage() {
   // Fetch databases straight from DB
-  const courses = await db.course.findMany();
-  const trainers = await db.trainer.findMany();
-  const batches = await db.batch.findMany();
-  const categories = await db.category.findMany();
+  let courses: any[] = [];
+  let trainers: any[] = [];
+  let batches: any[] = [];
+  let categories: any[] = [];
+
+  try {
+    courses = await db.course.findMany();
+    trainers = await db.trainer.findMany();
+    batches = await db.batch.findMany();
+    categories = await db.category.findMany();
+  } catch (e) {
+    console.error("Failed to load upcoming cohorts data:", e);
+  }
 
   return (
     <div className="min-h-screen bg-white text-textPrimary py-16 px-4 sm:px-6 lg:px-8 font-sans relative">

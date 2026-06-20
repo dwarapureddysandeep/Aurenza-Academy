@@ -16,20 +16,32 @@ export const revalidate = 60; // Revalidate cache every 60 seconds
 
 export default async function HomePage() {
   // Fetch dynamic data straight from the database
-  const courses = await db.course.findMany();
-  const testimonials = await db.testimonial.findMany();
-  const batches = await db.batch.findMany();
-  const webinars = await db.webinar.findMany();
-  const homepageContent = await db.homepageContent.findMany();
-  const certificationCategories = await db.certificationCategory.findMany({
-    where: { isActive: true },
-    orderBy: { displayOrder: 'asc' }
-  });
-  const certificationCourses = await db.certificationCourse.findMany({
-    where: { isActive: true },
-    orderBy: { displayOrder: 'asc' },
-    include: { category: true }
-  });
+  let courses: any[] = [];
+  let testimonials: any[] = [];
+  let batches: any[] = [];
+  let webinars: any[] = [];
+  let homepageContent: any[] = [];
+  let certificationCategories: any[] = [];
+  let certificationCourses: any[] = [];
+
+  try {
+    courses = await db.course.findMany();
+    testimonials = await db.testimonial.findMany();
+    batches = await db.batch.findMany();
+    webinars = await db.webinar.findMany();
+    homepageContent = await db.homepageContent.findMany();
+    certificationCategories = await db.certificationCategory.findMany({
+      where: { isActive: true },
+      orderBy: { displayOrder: 'asc' }
+    });
+    certificationCourses = await db.certificationCourse.findMany({
+      where: { isActive: true },
+      orderBy: { displayOrder: 'asc' },
+      include: { category: true }
+    });
+  } catch (e) {
+    console.error("Failed to load homepage data:", e);
+  }
 
   return (
     <div className="w-full bg-white text-textPrimary overflow-x-hidden font-sans">

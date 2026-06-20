@@ -1,4 +1,6 @@
+// Triggering production Vercel rebuild to apply dashboard environment variables.
 import { PrismaClient } from '@prisma/client';
+
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

@@ -780,6 +780,300 @@ async function main() {
         "Business Case Writing",
         "IREB Certified Professional for Requirements Engineering"
       ]
+    },
+    {
+      name: "Quality Management",
+      slug: "quality-management",
+      description: "Lean Six Sigma, CMMI, and Quality control certifications.",
+      icon: "CheckSquare",
+      displayOrder: 8,
+      courses: [
+        "Lean Six Sigma Green Belt Certification",
+        "Lean Six Sigma Black Belt Certification",
+        "Lean Six Sigma Yellow Belt Certification",
+        "CMMI® V1.3",
+        "TÜV SÜD Six Sigma Green Belt Certification Training",
+        "TÜV SÜD Six Sigma Black Belt Certification Training"
+      ]
+    },
+    {
+      name: "IT Service Management",
+      slug: "it-service-management",
+      description: "ITIL foundation, specialist, and transition frameworks.",
+      icon: "Award",
+      displayOrder: 9,
+      courses: [
+        "ITIL 5 Foundation Certification Training",
+        "ITIL® 4 Foundation",
+        "ITIL Foundation Bridge (V5) For ITIL 4 Certified Professionals",
+        "ITIL® Practitioner",
+        "ITIL® 4 Strategist Direct, Plan and Improve",
+        "ITIL® 4 Specialist: Create, Deliver and Support Training",
+        "ITIL® 4 Specialist: Drive Stakeholder Value Training",
+        "ISO 20000 Certification Course",
+        "ISO 27000 Foundation Certification Course",
+        "ISO 14001 Foundation Certification Course",
+        "ITIL® 4 Managing Professional Transition Module"
+      ]
+    },
+    {
+      name: "Programming",
+      slug: "programming",
+      description: "Full stack programming, scripting languages, and GIT systems.",
+      icon: "Terminal",
+      displayOrder: 10,
+      courses: [
+        "AI-Powered Software Development",
+        "GIT and GitHub Essentials",
+        "Linux Essentials Certification",
+        "R Programming Language Certification",
+        "C#",
+        "Ruby 101",
+        "Python Programming",
+        "Scala",
+        "Microsoft .NET Framework",
+        "ASP.NET",
+        "MATLAB",
+        "Advanced Python Course",
+        "Advanced R Course",
+        "Advanced Scala",
+        "Ruby Deep Dive"
+      ]
+    },
+    {
+      name: "BI and Visualization",
+      slug: "bi-visualization",
+      description: "Power BI, Spotfire, QlikView, and business intelligence systems.",
+      icon: "BarChart3",
+      displayOrder: 11,
+      courses: [
+        "Microsoft Power BI",
+        "TIBCO Spotfire",
+        "Data Visualization with QlikView",
+        "Sisense BI"
+      ]
+    },
+    {
+      name: "Blockchain",
+      slug: "blockchain",
+      description: "Blockchain security, architecture, and quality engineering.",
+      icon: "Globe",
+      displayOrder: 12,
+      courses: [
+        "Blockchain 101 Certification",
+        "Blockchain Security Training",
+        "Blockchain for Solutions Architect",
+        "Certified Blockchain Professional (CBCP)",
+        "Blockchain Quality Engineer Certification Training"
+      ]
+    },
+    {
+      name: "Big Data",
+      slug: "big-data",
+      description: "Hadoop administration, Spark, Storm, Kafka, and big data analysis.",
+      icon: "Database",
+      displayOrder: 13,
+      courses: [
+        "Apache Storm",
+        "Apache Spark and Scala",
+        "Apache Kafka",
+        "Comprehensive Pig",
+        "Comprehensive Hive",
+        "Hadoop Administration Course",
+        "Big Data and Hadoop Course",
+        "Big Data Analytics Course"
+      ]
+    },
+    {
+      name: "Mobile App Development",
+      slug: "mobile-app-development",
+      description: "Android, iOS, React Native, Xamarin, and cross-platform systems.",
+      icon: "Smartphone",
+      displayOrder: 14,
+      courses: [
+        "Ionic",
+        "Xamarin Studio",
+        "Xamarin Certification",
+        "OpenGL",
+        "NativeScript for Mobile App Development",
+        "Android Development",
+        "iOS Development",
+        "React Native",
+        ".NET MAUI for Xamarin Developers Course",
+        ".NET MAUI for C# Developers Course"
+      ]
+    },
+    {
+      name: "Software Testing",
+      slug: "software-testing",
+      description: "ISTQB tester pathways, Selenium automation, and Ranorex frameworks.",
+      icon: "CheckSquare",
+      displayOrder: 15,
+      courses: [
+        "Coded UI Test using Microsoft Visual Studio 2013",
+        "ISTQB Foundation Level 2018 Training",
+        "Selenium Essentials",
+        "Teradata",
+        "Concordion",
+        "ISTQB Certified Advanced Level Security Tester",
+        "Cucumber",
+        "Silk Test Workbench",
+        "Automation Testing using TestComplete",
+        "ISTQB Certified Advanced Level Test Manager",
+        "Functional Testing Using Ranorex",
+        "ISTQB Certified Advanced Level Test Analyst",
+        "ISTQB Advanced Level Technical Test Analyst"
+      ]
+    },
+    {
+      name: "Digital Marketing",
+      slug: "digital-marketing",
+      description: "Funnel ads, organic marketing, email, paid campaigns, and SEO.",
+      icon: "Megaphone",
+      displayOrder: 16,
+      courses: [
+        "Generative AI Mastery Certificate for Content Creation",
+        "AI-Driven Digital Marketing: Funnels, Ads, Content & KPIs",
+        "Digital Marketing Essentials",
+        "Segmentation, Targeting & Positioning (STP)",
+        "Data-driven Marketing",
+        "Organic Digital Marketing",
+        "Paid Digital Marketing",
+        "Content Marketing",
+        "Conversion Optimization",
+        "Digital Marketing",
+        "The Complete Google Ads Masterclass",
+        "Display Advertising",
+        "E-mail Marketing",
+        "Mobile Marketing",
+        "Pay Per Click Advertising"
+      ]
+    },
+    {
+      name: "Risk Management",
+      slug: "risk-management",
+      description: "FRM credentials, internal controls, GDPR, and data protection.",
+      icon: "AlertTriangle",
+      displayOrder: 17,
+      courses: [
+        "FRM Level 1 Certification",
+        "FRM Level 2 Certification",
+        "Risk Management and Internal Controls",
+        "Introduction to the European Union General Data Protection Regulation",
+        "Data Protection Associate"
+      ]
+    },
+    {
+      name: "Finance",
+      slug: "finance",
+      description: "Financial modeling, auditing, IFRS reporting, and budgeting.",
+      icon: "DollarSign",
+      displayOrder: 18,
+      courses: [
+        "Professional Certificate Program in Financial Modelling and Analysis (PwC Academy)",
+        "Auditing and Assurance Training",
+        "Budget Analysis and Forecasting",
+        "Certificate in International Financial Reporting",
+        "Corporate Governance",
+        "Credit Risk Management",
+        "Diploma in International Financial Reporting",
+        "Finance for Non-Finance Managers",
+        "Financial Modeling with Excel",
+        "IFRS for SMEs"
+      ]
+    },
+    {
+      name: "Database",
+      slug: "database",
+      description: "PostgreSQL, MongoDB, Neo4J, Redis, MariaDB, and database design.",
+      icon: "Database",
+      displayOrder: 19,
+      courses: [
+        "MongoDB Administrator",
+        "PostgreSQL Training: Fundamentals to Advanced",
+        "Master Neo4J Graph Database",
+        "MariaDB For Developers",
+        "HBase",
+        "MySQL",
+        "Redis",
+        "MySQL with Hibernate"
+      ]
+    },
+    {
+      name: "Soft Skill Training",
+      slug: "soft-skill-training",
+      description: "Leadership management, corporate career growth, and emotional intelligence.",
+      icon: "Users",
+      displayOrder: 20,
+      courses: [
+        "Tech Sales Excellence Bootcamp",
+        "Leadership for Managers Program",
+        "Attributes of a Leader",
+        "Building Team Trust Workshop",
+        "Communication Skills Mastery",
+        "International Certificate In Advanced Leadership Skills",
+        "Soft Skills - Communication",
+        "Soft Skills Leadership",
+        "Soft Skills for Corporate Career Growth",
+        "Communication Skills Intensive",
+        "Conflict Management",
+        "Communication",
+        "Emotional Intelligence",
+        "Stress Management Training",
+        "Presentation Skills Training"
+      ]
+    },
+    {
+      name: "CompTIA",
+      slug: "comptia",
+      description: "CompTIA A+, Network+, Security+, Cloud+, and Server+ certifications.",
+      icon: "Cpu",
+      displayOrder: 21,
+      courses: [
+        "CompTIA A+ Certification",
+        "CompTIA Cloud Essentials Certification",
+        "CompTIA Cloud+ Certification",
+        "CompTIA Mobility+ Certification",
+        "CompTIA Network+ Certification",
+        "CompTIA Security+ Certification",
+        "CompTIA Server+ Certification",
+        "CompTIA Project+ Certification"
+      ]
+    },
+    {
+      name: "Others",
+      slug: "others",
+      description: "IELTS preparation, Supply chain, and custom bootcamps.",
+      icon: "Sparkles",
+      displayOrder: 22,
+      courses: [
+        "IELTS Preparation Training Course",
+        "AI-Powered Supply Chain Management Certification",
+        "Software Engineering Bootcamp - JS",
+        "AI-Powered Full-Stack Executive Certification Training",
+        "Cybersecurity Bootcamp",
+        "Ethical Hacking Mastery Course",
+        "Microsoft Azure AI Engineer Associate Customized Training",
+        "Certified Supply Chain Professional",
+        "Microsoft Excel",
+        "Advanced Excel 2021",
+        "Flow Measurement and Custody Transfer Course",
+        "Foundation Certificate in Marketing",
+        "Leading and Delivering World Class Product Development Course",
+        "Product Management and Product Marketing for Telecoms, IT and Software",
+        "Software Estimation and Measurement Using IFPUG FPA"
+      ]
+    },
+    {
+      name: "Medical Coding",
+      slug: "medical-coding",
+      description: "CPC and CPMA credential pathways for medical billing and coding.",
+      icon: "Activity",
+      displayOrder: 23,
+      courses: [
+        "Certified Professional Coder (CPC) Certification",
+        "CPMA"
+      ]
     }
   ];
 

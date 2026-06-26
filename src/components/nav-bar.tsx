@@ -31,25 +31,25 @@ const featuredCourses = [
   {
     name: 'AWS Solutions Architect',
     description: 'Design secure, elastic cloud environments on Amazon AWS.',
-    href: '/courses/java-full-stack-development', // link to a valid seeded course
+    href: '/courses/aws-solutions-architect',
     icon: '☁️'
   },
   {
     name: 'Azure Administrator',
     description: 'Govern and scale enterprise compute infrastructure.',
-    href: '/courses/frontend-development-react-nextjs',
+    href: '/courses/microsoft-azure-administrator',
     icon: '⚙️'
   },
   {
     name: 'DevOps System Engineer',
     description: 'Deploy automated Docker container pipelines.',
-    href: '/courses/java-full-stack-development',
+    href: '/courses/devops-engineer-program',
     icon: '🚀'
   },
   {
     name: 'Data Science Bootcamp',
     description: 'Analyze enterprise metrics and statistics models.',
-    href: '/courses/ai-machine-learning-engineering',
+    href: '/courses/data-science-ai-bootcamp',
     icon: '📊'
   }
 ];

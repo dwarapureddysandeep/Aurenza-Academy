@@ -1,15 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, MessageSquare, ArrowRight } from 'lucide-react';
+import { Sparkles, MessageSquare, ArrowRight, ArrowDownToLine } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface CourseActionsWidgetProps {
   courseName: string;
   courseId: string;
+  courseSlug: string;
 }
 
-export default function CourseActionsWidget({ courseName, courseId }: CourseActionsWidgetProps) {
+export default function CourseActionsWidget({ courseName, courseId, courseSlug }: CourseActionsWidgetProps) {
   const [whatsappNumber, setWhatsappNumber] = useState('917013057827');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('aurenza_settings');
@@ -42,6 +45,25 @@ export default function CourseActionsWidget({ courseName, courseId }: CourseActi
     window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
   };
 
+  const handleDownloadBrochure = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    const toastId = toast.loading("Preparing brochure...");
+    try {
+      const res = await fetch(`/api/brochures/${courseSlug}`, { method: 'HEAD' });
+      if (res.ok) {
+        toast.success("Download started!", { id: toastId });
+        window.open(`/api/brochures/${courseSlug}`, '_blank');
+      } else {
+        toast.error("Brochure Coming Soon", { id: toastId });
+      }
+    } catch (e) {
+      toast.error("Brochure Coming Soon", { id: toastId });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div className="space-y-3 pt-2">
       <button
@@ -53,9 +75,17 @@ export default function CourseActionsWidget({ courseName, courseId }: CourseActi
 
       <button
         onClick={handleContactUs}
-        className="w-full py-4 rounded-xl bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 text-xs font-bold text-green-400 transition flex items-center justify-center gap-2 uppercase tracking-wider text-center"
+        className="w-full py-4 rounded-xl bg-[#008556]/10 border border-[#008556]/20 hover:bg-[#008556]/20 text-xs font-bold text-[#008556] transition flex items-center justify-center gap-2 uppercase tracking-wider text-center"
       >
-        <MessageSquare className="w-4 h-4 text-green-400" /> Contact Us
+        <MessageSquare className="w-4 h-4 text-[#008556]" /> Contact Us
+      </button>
+
+      <button
+        onClick={handleDownloadBrochure}
+        disabled={isDownloading}
+        className="w-full py-4 rounded-xl bg-slate-900/50 border border-slate-700 hover:bg-slate-900 text-xs font-bold text-white transition flex items-center justify-center gap-2 uppercase tracking-wider text-center disabled:opacity-50"
+      >
+        <ArrowDownToLine className="w-4 h-4" /> Download Brochure
       </button>
     </div>
   );

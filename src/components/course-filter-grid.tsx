@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Clock, Users, ArrowDown, Search, X, Star, BookOpen, User, HelpCircle, ArrowRight, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 interface CourseFilterGridProps {
   initialCourses: any[];
@@ -26,6 +27,26 @@ export default function CourseFilterGrid({
   const [searchQuery, setSearchQuery] = useState(searchParam);
   const [showSearch, setShowSearch] = useState(!!searchParam);
   const [activePreviewCourse, setActivePreviewCourse] = useState<any | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadBrochure = async (slug: string) => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    const toastId = toast.loading("Preparing brochure...");
+    try {
+      const res = await fetch(`/api/brochures/${slug}`, { method: 'HEAD' });
+      if (res.ok) {
+        toast.success("Download started!", { id: toastId });
+        window.open(`/api/brochures/${slug}`, '_blank');
+      } else {
+        toast.error("Brochure Coming Soon", { id: toastId });
+      }
+    } catch (e) {
+      toast.error("Brochure Coming Soon", { id: toastId });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   // Sync state if URL query param prop changes (e.g., searching from navbar)
   useEffect(() => {
@@ -336,7 +357,7 @@ export default function CourseFilterGrid({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActivePreviewCourse(course);
+                      handleDownloadBrochure(course.slug);
                     }}
                     className="flex-1 py-2.5 bg-[#0C182F] hover:bg-opacity-95 text-white rounded-[4px] text-[11px] font-extrabold transition flex items-center justify-center gap-1.5 uppercase tracking-wider shadow-sm"
                   >
@@ -524,6 +545,13 @@ export default function CourseFilterGrid({
                   </div>
                   
                   <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDownloadBrochure(activePreviewCourse.slug)}
+                      disabled={isDownloading}
+                      className="px-4 py-2.5 rounded-btn border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-black tracking-wider uppercase transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5 stroke-[2.5px]" /> Download Syllabus
+                    </button>
                     <button
                       onClick={() => setActivePreviewCourse(null)}
                       className="px-4 py-2.5 rounded-btn border border-borderLight bg-white text-xs font-bold text-textSecondary hover:text-textPrimary transition"

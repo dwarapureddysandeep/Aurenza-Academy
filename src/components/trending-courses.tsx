@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { 
   Heart, Star, Clock, Calendar, Check, X, ArrowRight, 
   Eye, BookOpen, Award, Sparkles, TrendingUp, User, Info, 
-  HelpCircle, ArrowLeftRight
+  HelpCircle, ArrowLeftRight, ArrowDown
 } from 'lucide-react';
 
 interface SyllabusItem {
@@ -95,6 +95,26 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
   const [compareList, setCompareList] = useState<string[]>([]);
   const [activePreviewCourse, setActivePreviewCourse] = useState<Course | null>(null);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadBrochure = async (slug: string) => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    const toastId = toast.loading("Preparing brochure...");
+    try {
+      const res = await fetch(`/api/brochures/${slug}`, { method: 'HEAD' });
+      if (res.ok) {
+        toast.success("Download started!", { id: toastId });
+        window.open(`/api/brochures/${slug}`, '_blank');
+      } else {
+        toast.error("Brochure Coming Soon", { id: toastId });
+      }
+    } catch (e) {
+      toast.error("Brochure Coming Soon", { id: toastId });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
@@ -564,6 +584,13 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                   </div>
                   
                   <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDownloadBrochure(activePreviewCourse.slug)}
+                      disabled={isDownloading}
+                      className="px-4 py-2.5 rounded-btn border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-xs font-black tracking-wider uppercase transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5 stroke-[2.5px]" /> Download Syllabus
+                    </button>
                     <button
                       onClick={() => setActivePreviewCourse(null)}
                       className="px-4 py-2.5 rounded-btn border border-borderLight bg-white text-xs font-bold text-textSecondary hover:text-textPrimary transition"

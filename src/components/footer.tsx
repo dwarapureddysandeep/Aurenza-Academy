@@ -103,7 +103,7 @@ export default function Footer() {
               <li><Link href="/#webinars" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Webinars</Link></li>
               <li><Link href="/success-stories" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Success Stories</Link></li>
               <li><Link href="/about" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">About Us</Link></li>
-              <li><Link href="/contact" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">FAQs</Link></li>
+              <li><Link href="/faq" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">FAQs</Link></li>
             </ul>
           </div>
 
@@ -199,8 +199,8 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center gap-4 text-xs font-semibold text-textSecondary">
             <div className="flex gap-4">
               <Link href="/privacy" className="hover:text-primary transition underline decoration-1 underline-offset-2">Privacy Policy</Link>
-              <Link href="/login" className="hover:text-primary transition underline decoration-1 underline-offset-2">Terms & Conditions</Link>
-              <Link href="/contact" className="hover:text-primary transition underline decoration-1 underline-offset-2">Refund Policy</Link>
+              <Link href="/terms" className="hover:text-primary transition underline decoration-1 underline-offset-2">Terms & Conditions</Link>
+              <Link href="/refund" className="hover:text-primary transition underline decoration-1 underline-offset-2">Refund Policy</Link>
             </div>
             <div className="text-textSecondary/80 font-normal">
               &copy; 2026 Aurenza Academy. All Rights Reserved.

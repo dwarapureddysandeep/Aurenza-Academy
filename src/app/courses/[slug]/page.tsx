@@ -197,7 +197,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
                   </p>
                 </div>
 
-                <CourseActionsWidget courseName={course.name} courseId={course.id} />
+                <CourseActionsWidget courseName={course.name} courseId={course.id} courseSlug={course.slug} />
 
                 <div className="pt-4 border-t border-borderLight space-y-3.5 text-xs text-textSecondary">
                   <div className="flex items-center gap-2">

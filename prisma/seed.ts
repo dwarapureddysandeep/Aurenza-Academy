@@ -651,7 +651,6 @@ async function main() {
       icon: "Cpu",
       displayOrder: 2,
       courses: [
-        "IIT Kharagpur - Executive Post Graduate Certificate in Generative AI & Agentic AI",
         "Applied Agentic AI Certification",
         "AI-Powered Product Management Course",
         "Generative AI Masters Program",

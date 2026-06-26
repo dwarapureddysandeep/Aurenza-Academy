@@ -10,6 +10,8 @@ import {
   Eye, BookOpen, Award, Sparkles, TrendingUp, User, Info, 
   HelpCircle, ArrowLeftRight, ArrowDown
 } from 'lucide-react';
+import Image from 'next/image';
+
 
 interface SyllabusItem {
   module: string;
@@ -80,6 +82,27 @@ const formatPrice = (price: number) => {
     maximumFractionDigits: 0
   }).format(price);
 };
+
+function CourseImage({ src, alt, className, width = 384, height = 192 }: { src: string; alt: string; className?: string; width?: number; height?: number }) {
+  const [imgSrc, setImgSrc] = useState(src);
+  
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
+  return (
+    <Image
+      src={imgSrc || '/images/course-placeholder.jpg'}
+      alt={alt}
+      width={width}
+      height={height}
+      onError={() => {
+        setImgSrc('/images/course-placeholder.jpg');
+      }}
+      className={className}
+    />
+  );
+}
 
 export default function TrendingCourses({ initialCourses }: TrendingCoursesProps) {
   const router = useRouter();
@@ -221,13 +244,9 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                 {/* Image Banner Section */}
                 <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
                   <Link href={`/courses/${course.slug}`} className="block w-full h-full">
-                    <img 
+                    <CourseImage 
                       src={course.image} 
                       alt={course.name}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/images/course-placeholder.jpg";
-                      }}
                       className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                     />
                   </Link>
@@ -389,13 +408,11 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                         key={c.id}
                         className="flex items-center gap-2 bg-[#FAFAFC] border border-borderLight px-2.5 py-1.5 rounded-full max-w-[180px] sm:max-w-xs"
                       >
-                        <img 
+                        <CourseImage 
                           src={c.image} 
                           alt="" 
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = "/images/course-placeholder.jpg";
-                          }}
+                          width={20}
+                          height={20}
                           className="w-5 h-5 rounded-full object-cover shrink-0"
                         />
                         <span className="text-[10px] font-bold text-textPrimary truncate">{c.name}</span>
@@ -667,13 +684,11 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                         return (
                           <th key={c.id} className="py-4 px-4 w-1/4">
                             <div className="space-y-3">
-                              <img 
+                              <CourseImage 
                                 src={c.image} 
                                 alt="" 
-                                onError={(e) => {
-                                  e.currentTarget.onerror = null;
-                                  e.currentTarget.src = "/images/course-placeholder.jpg";
-                                }}
+                                width={240}
+                                height={96}
                                 className="w-full h-24 object-cover rounded-card border border-borderLight"
                               />
                               <div>

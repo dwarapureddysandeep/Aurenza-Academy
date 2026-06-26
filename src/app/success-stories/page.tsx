@@ -2,7 +2,7 @@ import React from 'react';
 import { db } from '@/lib/db';
 import Testimonials from '@/components/testimonials';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Cache on CDN for up to 1 hour, then regenerate in background (ISR)
 
 export const metadata = {
   title: "Success Stories & Student Reviews | Aurenza Academy",

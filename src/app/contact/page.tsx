@@ -7,7 +7,7 @@ import FAQAccordion from '@/components/faq-accordion';
 import CounselingButton from '@/components/counseling-button';
 import { db } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Cache on CDN for up to 1 hour, then regenerate in background (ISR)
 
 export const metadata = {
   title: "Contact Us | Aurenza Academy",

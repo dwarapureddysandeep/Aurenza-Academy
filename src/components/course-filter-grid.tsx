@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Clock, Users, ArrowDown, Search, X, Star, BookOpen, User, HelpCircle, ArrowRight, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 interface CourseFilterGridProps {
   initialCourses: any[];
@@ -13,6 +14,27 @@ interface CourseFilterGridProps {
   initialCategory?: string;
   limit?: number;
   isHomepage?: boolean;
+}
+
+function CourseImage({ src, alt, className, width = 384, height = 192 }: { src: string; alt: string; className?: string; width?: number; height?: number }) {
+  const [imgSrc, setImgSrc] = useState(src);
+  
+  useEffect(() => {
+    setImgSrc(src);
+  }, [src]);
+
+  return (
+    <Image
+      src={imgSrc || '/images/course-placeholder.jpg'}
+      alt={alt}
+      width={width}
+      height={height}
+      onError={() => {
+        setImgSrc('/images/course-placeholder.jpg');
+      }}
+      className={className}
+    />
+  );
 }
 
 export default function CourseFilterGrid({ 
@@ -285,13 +307,9 @@ export default function CourseFilterGrid({
                 >
                   {/* Course Image & Badge Overlay */}
                   <div className="relative h-48 w-full bg-[#F1F5F9] border-b border-[#ECECF4] overflow-hidden">
-                    <img
+                    <CourseImage
                       src={course.image}
                       alt={course.name}
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "/images/course-placeholder.jpg";
-                      }}
                       className="h-full w-full object-cover grayscale opacity-90 transition-all duration-500 group-hover:scale-103 group-hover:grayscale-0"
                     />
                     

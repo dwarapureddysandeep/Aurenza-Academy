@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Play, X, Check, Quote, Users, Award, ShieldAlert } from 'lucide-react';
+import Image from 'next/image';
+
 
 interface TestimonialData {
   id: string;
@@ -49,9 +51,11 @@ function TestimonialAvatar({ src, name }: { src?: string; name: string }) {
   }
 
   return (
-    <img
+    <Image
       src={src}
       alt={name}
+      width={56}
+      height={56}
       onError={() => setHasError(true)}
       className="w-14 h-14 rounded-full object-cover border border-[#ECECF4] shrink-0"
     />
@@ -250,9 +254,12 @@ export default function Testimonials({ initialTestimonials, limit, isHomepage = 
                 >
                   {/* Thumbnail Area */}
                   <div className="relative h-48 bg-slate-100 overflow-hidden flex items-center justify-center">
-                    <img 
+                    <Image 
                       src={vid.thumbnail} 
                       alt={vid.studentName} 
+                      width={384}
+                      height={192}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     {/* Play Button Overlay */}

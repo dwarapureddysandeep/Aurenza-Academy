@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, ChevronDown, LogOut, LayoutDashboard, Search, BookOpen, Layers, Award, Laptop, Cloud, Shield, Cpu, HelpCircle, Activity } from 'lucide-react';
 import { getCurrentUser, logoutUser } from '@/lib/actions';
@@ -128,9 +129,12 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
           
           {/* Logo & Brand Name */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 select-none group" aria-label="Aurenza">
-            <img
+            <Image
               src="/aurenza-logo.png"
               alt="Aurenza"
+              width={140}
+              height={36}
+              priority
               className="h-[32px] sm:h-[36px] w-auto object-contain transition-all duration-300 group-hover:scale-[1.02] group-hover:filter group-hover:drop-shadow-[0_0_8px_rgba(122,0,140,0.15)]"
             />
           </Link>

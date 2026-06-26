@@ -12,7 +12,7 @@ import PopularCategories from '@/components/popular-categories';
 import TrendingCourses from '@/components/trending-courses';
 import Testimonials from '@/components/testimonials';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Cache on CDN for up to 1 hour, then regenerate in background (ISR)
 
 export default async function HomePage() {
   // Fetch dynamic data straight from the database

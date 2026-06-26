@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Search, Check } from 'lucide-react';
+import Image from 'next/image';
 
 // ── Custom Count-up Hook ────────────────────────────────────────────────────────
 function useCountUp(target: number, duration: number = 2000, startDelay: number = 500) {
@@ -210,9 +211,12 @@ export default function HeroSection({ homepageContent = [] }: { homepageContent?
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
             >
-              <img
+              <Image
                 src="/hero-illustration.png"
                 alt="Aurenza Academy — Professional learning illustration"
+                width={448}
+                height={384}
+                priority
                 className="w-full h-auto object-contain mx-auto opacity-95"
               />
 

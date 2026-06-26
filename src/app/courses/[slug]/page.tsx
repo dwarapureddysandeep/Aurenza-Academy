@@ -8,7 +8,21 @@ import CourseActionsWidget from '@/components/course-actions-widget';
 import ReserveSeatButton from '@/components/reserve-seat-button';
 import { parseBatchData } from '@/lib/utils';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Cache on CDN for up to 1 hour, then regenerate in background (ISR)
+
+export async function generateStaticParams() {
+  try {
+    const courses = await db.course.findMany({ select: { slug: true } });
+    const certCourses = await db.certificationCourse.findMany({ select: { slug: true } });
+    return [
+      ...courses.map(c => ({ slug: c.slug })),
+      ...certCourses.map(c => ({ slug: c.slug }))
+    ];
+  } catch (e) {
+    console.error("Failed to generate static params for courses:", e);
+    return [];
+  }
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;

@@ -36,7 +36,7 @@ async function main() {
       id: "user-admin",
       name: "Aurenza Admin",
       email: "info@aurenzaacademy.com",
-      password: hashPassword("aurenza_admin"), // Securely hashed password
+      password: hashPassword("Aurenza@0210"), // Securely hashed password
       phone: "+91 7013057827",
       role: "ADMIN",
       bio: "Executive Academy Administrator",

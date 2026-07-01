@@ -9,6 +9,242 @@ function hashPassword(password: string): string {
   return crypto.createHmac('sha256', salt).update(password).digest('hex');
 }
 
+function classifyCourseLevel(title: string): string {
+  const t = title.toLowerCase();
+  
+  // Advanced
+  if (
+    t.includes('pgmp') ||
+    t.includes('pfmp') ||
+    t.includes('pmi-rmp') ||
+    t.includes('pmi-sp') ||
+    t.includes('rte') ||
+    t.includes('spc') ||
+    t.includes('practice consultant') ||
+    t.includes('enterprise agile coach') ||
+    t.includes('togaf advanced') ||
+    t.includes('togaf enterprise architect') ||
+    t.includes('cissp') ||
+    t.includes('cism') ||
+    t.includes('cisa') ||
+    t.includes('ccsp') ||
+    t.includes('advanced safe') ||
+    t.includes('black belt') ||
+    t.includes('advanced scrum') ||
+    t.includes('a-csm') ||
+    t.includes('a-cspo') ||
+    t.includes('psm-a') ||
+    t.includes('pspo-a') ||
+    t.includes('psm ii') ||
+    t.includes('pspo ii') ||
+    t.includes('architect professional') ||
+    t.includes('pmi-cpmai') ||
+    t.includes('aspc') ||
+    t.includes('advanced level security tester') ||
+    t.includes('advanced level test manager') ||
+    t.includes('agile product management') ||
+    t.includes('lean portfolio management') ||
+    t.includes('advanced scrum master')
+  ) {
+    return 'Advanced';
+  }
+  
+  // Intermediate -> Advanced
+  if (
+    t.includes('pmp') ||
+    t.includes('cbap') ||
+    t.includes('ccba') ||
+    t.includes('masters') ||
+    t.includes("master's") ||
+    t.includes('bootcamp') ||
+    t.includes('architect associate') ||
+    t.includes('solutions architect') || // AWS Solutions Architect
+    t.includes('data science & ai') ||
+    t.includes('full-stack') ||
+    t.includes('full stack') ||
+    t.includes('cybersecurity bootcamp') ||
+    t.includes('ethical hacking')
+  ) {
+    return 'Intermediate -> Advanced';
+  }
+  
+  // Beginner (checked BEFORE intermediate to catch "foundation", "fundamentals", "basics", etc.)
+  if (
+    t.includes('fundamentals') ||
+    t.includes('foundation') ||
+    t.includes('basic') ||
+    t.includes('basics') ||
+    t.includes('excel') ||
+    t.includes('power bi fundamentals') ||
+    t.includes('capm') ||
+    t.includes('introduction') ||
+    t.includes('intro') ||
+    t.includes('essentials') ||
+    t.includes('cloud practitioner') ||
+    t.includes('yellow belt') ||
+    t.includes('101') ||
+    t.includes('get started') ||
+    t.includes('start with')
+  ) {
+    return 'Beginner';
+  }
+  
+  // Intermediate (catch-all for standard professional certifications)
+  if (
+    t.includes('pmi-acp') ||
+    t.includes('prince2') ||
+    t.includes('csm') ||
+    t.includes('cspo') ||
+    t.includes('scrummaster') ||
+    t.includes('product owner') ||
+    t.includes('popm') ||
+    t.includes('fabric') ||
+    t.includes('data engineering') ||
+    t.includes('data engineer') ||
+    t.includes('devops') ||
+    t.includes('scrum master') ||
+    t.includes('icp-acc') ||
+    t.includes('practitioner') ||
+    t.includes('administrator') ||
+    t.includes('scrum developer') ||
+    t.includes('associate') ||
+    t.includes('green belt') ||
+    t.includes('test analyst') ||
+    t.includes('technical test analyst') ||
+    t.includes('digital marketing') ||
+    t.includes('financial modelling') ||
+    t.includes('finance for non-finance') ||
+    t.includes('auditing') ||
+    t.includes('lead') ||
+    t.includes('leader') ||
+    t.includes('leadership') ||
+    t.includes('coaching') ||
+    t.includes('scrum') ||
+    t.includes('testing') ||
+    t.includes('ranorex') ||
+    t.includes('testcomplete') ||
+    t.includes('selenium') ||
+    t.includes('development') ||
+    t.includes('developer') ||
+    t.includes('programming') ||
+    t.includes('programmer') ||
+    t.includes('database') ||
+    t.includes('mongodb') ||
+    t.includes('postgresql') ||
+    t.includes('mysql') ||
+    t.includes('neo4j') ||
+    t.includes('mariadb') ||
+    t.includes('redis') ||
+    t.includes('hbase') ||
+    t.includes('git') ||
+    t.includes('github') ||
+    t.includes('linux') ||
+    t.includes('android') ||
+    t.includes('ios') ||
+    t.includes('react') ||
+    t.includes('angular') ||
+    t.includes('node') ||
+    t.includes('javascript') ||
+    t.includes('python') ||
+    t.includes('c#') ||
+    t.includes('scala') ||
+    t.includes('ruby') ||
+    t.includes('matlab') ||
+    t.includes('sharepoint') ||
+    t.includes('net') ||
+    t.includes('asp') ||
+    t.includes('php') ||
+    t.includes('ui/ux') ||
+    t.includes('ui-ux') ||
+    t.includes('ux') ||
+    t.includes('design') ||
+    t.includes('blockchain') ||
+    t.includes('big data') ||
+    t.includes('hadoop') ||
+    t.includes('spark') ||
+    t.includes('kafka') ||
+    t.includes('storm') ||
+    t.includes('pig') ||
+    t.includes('hive') ||
+    t.includes('sales') ||
+    t.includes('supply chain') ||
+    t.includes('cpc') ||
+    t.includes('cpma') ||
+    t.includes('safe') ||
+    t.includes('primavera')
+  ) {
+    return 'Intermediate';
+  }
+  
+  // Fallbacks
+  if (t.includes('architect') || t.includes('manager') || t.includes('leader') || t.includes('analyst') || t.includes('professional')) {
+    return 'Intermediate';
+  }
+  
+  return 'Beginner';
+}
+
+function cleanCourseTitle(title: string): string {
+  let cleaned = title;
+  
+  // Replace double spaces
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  
+  // Handle specific known duplicates first
+  cleaned = cleaned.replace(/Certification\s+Certification/gi, 'Certification');
+  cleaned = cleaned.replace(/Certified\s+Certified/gi, 'Certified');
+  cleaned = cleaned.replace(/Program\s+Program/gi, 'Program');
+  cleaned = cleaned.replace(/Certification\s+Program\s+Certification/gi, 'Certification Program');
+  cleaned = cleaned.replace(/Certification\s+Certification\s+Program/gi, 'Certification Program');
+  
+  // Replace exact repeated strings in titles
+  cleaned = cleaned.replace(/Certified\s+Business\s+Analysis\s+Professional\s+\(CBAP\)\s+Certification/gi, 'Certified Business Analysis Professional (CBAP®)');
+  cleaned = cleaned.replace(/Certified\s+Business\s+Analysis\s+Professional\s+\(CBAP®\)\s+Certification/gi, 'Certified Business Analysis Professional (CBAP®)');
+  cleaned = cleaned.replace(/Certified\s+Business\s+Analysis\s+Professional™\s+\(CBAP®\)\s+Certification/gi, 'Certified Business Analysis Professional (CBAP®)');
+  cleaned = cleaned.replace(/AWS\s+Cloud\s+Practitioner\s+Certification/gi, 'AWS Certified Cloud Practitioner');
+  cleaned = cleaned.replace(/AWS\s+Certified\s+Cloud\s+Practitioner\s+Certification/gi, 'AWS Certified Cloud Practitioner');
+  
+  // Format specific certifications with proper registered symbols
+  if (cleaned.match(/\bPMP\b/i) && !cleaned.includes('PMP®')) {
+    cleaned = cleaned.replace(/\bPMP\b/gi, 'PMP®');
+  }
+  if (cleaned.match(/\bCBAP\b/i) && !cleaned.includes('CBAP®')) {
+    cleaned = cleaned.replace(/\bCBAP\b/gi, 'CBAP®');
+  }
+  if (cleaned.match(/\bPMI-ACP\b/i) && !cleaned.includes('PMI-ACP®')) {
+    cleaned = cleaned.replace(/\bPMI-ACP\b/gi, 'PMI-ACP®');
+  }
+  if (cleaned.match(/\bPgMP\b/i) && !cleaned.includes('PgMP®')) {
+    cleaned = cleaned.replace(/\bPgMP\b/gi, 'PgMP®');
+  }
+  if (cleaned.match(/\bPfMP\b/i) && !cleaned.includes('PfMP®')) {
+    cleaned = cleaned.replace(/\bPfMP\b/gi, 'PfMP®');
+  }
+  if (cleaned.match(/\bPRINCE2\b/i) && !cleaned.includes('PRINCE2®')) {
+    cleaned = cleaned.replace(/\bPRINCE2\b/gi, 'PRINCE2®');
+  }
+  if (cleaned.match(/\bCAPM\b/i) && !cleaned.includes('CAPM®')) {
+    cleaned = cleaned.replace(/\bCAPM\b/gi, 'CAPM®');
+  }
+  if (cleaned.match(/\bSAFe\b/i) && !cleaned.includes('SAFe®')) {
+    cleaned = cleaned.replace(/\bSAFe\b/gi, 'SAFe®');
+  }
+  
+  // Strip trailing "Certification" or "Certification Program" from names that shouldn't end with it,
+  // or clean up trailing duplicates
+  if (cleaned.endsWith(' Certification')) {
+    if (cleaned.includes('PMP®')) cleaned = 'PMP® Certification';
+    if (cleaned.includes('CBAP®')) cleaned = 'Certified Business Analysis Professional (CBAP®)';
+  }
+
+  // Clean trailing punctuation or double symbols
+  cleaned = cleaned.replace(/®®/g, '®').replace(/™™/g, '™');
+  // Clean double registered symbol after parenthesis: e.g. (PgMP®)® -> (PgMP®)
+  cleaned = cleaned.replace(/\((PMP|CBAP|PgMP|PfMP|CAPM|PMI-ACP|SAFe|PRINCE2)®\)\s*®/gi, '($1®)');
+
+  return cleaned.trim();
+}
+
 async function main() {
   console.log('[Seeder] Starting database seeding...');
 
@@ -1085,8 +1321,8 @@ async function main() {
 
     let displayOrder = 0;
     for (const courseTitle of cat.courses) {
-      const cleanTitle = courseTitle.replace(/[®™]/g, '');
-      const courseSlug = cleanTitle.toLowerCase()
+      const cleanTitleForSlug = courseTitle.replace(/[®™]/g, '');
+      const courseSlug = cleanTitleForSlug.toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)+/g, '');
       
@@ -1098,20 +1334,24 @@ async function main() {
                        courseTitle.includes('PMP') || courseTitle.includes('CAPM') || courseTitle.includes('PgMP') || courseTitle.includes('PfMP') || courseTitle.includes('PMI') ? 'PMI' :
                        courseTitle.includes('IIT') || courseTitle.includes('Kharagpur') ? 'IIT Kharagpur' : 'Aurenza Academy';
 
+      const standardizedTitle = cleanCourseTitle(courseTitle);
+      const standardizedLevel = classifyCourseLevel(standardizedTitle);
+
       await prisma.certificationCourse.upsert({
         where: { slug: courseSlug },
         update: {
-          title: courseTitle,
+          title: standardizedTitle,
           categoryId: dbCat.id,
           displayOrder: displayOrder,
+          level: standardizedLevel,
         },
         create: {
           categoryId: dbCat.id,
-          title: courseTitle,
+          title: standardizedTitle,
           slug: courseSlug,
-          shortDescription: `Master ${courseTitle} skills with live interactive cohort sessions.`,
+          shortDescription: `Master ${standardizedTitle} skills with live interactive cohort sessions.`,
           duration: courseTitle.includes('Bootcamp') || courseTitle.includes('Program') || courseTitle.includes('Masters') ? '3-6 months' : '4-8 weeks',
-          level: courseTitle.includes('Advanced') || courseTitle.includes('Practitioner') || courseTitle.includes('Leader') ? 'Intermediate' : 'Beginner',
+          level: standardizedLevel,
           certificationProvider: provider,
           image: `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80`,
           displayOrder: displayOrder,

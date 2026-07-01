@@ -1,6 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { Clock, Users, Star, BookOpen, User, Calendar, MessageSquare, ArrowRight, ShieldCheck, Sparkles, Award, PlayCircle } from 'lucide-react';
 import { db } from '@/lib/db';
 import FAQAccordion from '@/components/faq-accordion';
@@ -21,6 +22,56 @@ export async function generateStaticParams() {
   } catch (e) {
     console.error("Failed to generate static params for courses:", e);
     return [];
+  }
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  try {
+    const { slug } = await params;
+    
+    let title = "Professional Certification";
+    let description = "Equipping graduates and professionals with high-income tech skills.";
+    
+    const dbCourse = await db.course.findUnique({
+      where: { slug },
+      select: { name: true, description: true }
+    });
+
+    if (dbCourse) {
+      title = dbCourse.name;
+      description = dbCourse.description || `Transform your career with ${dbCourse.name}. Enroll in elite live cohorts with direct placement referrals.`;
+    } else {
+      const certCourse = await db.certificationCourse.findUnique({
+        where: { slug },
+        select: { title: true, shortDescription: true }
+      });
+      if (certCourse) {
+        title = certCourse.title;
+        description = certCourse.shortDescription || `Transform your career with ${certCourse.title} certification training.`;
+      }
+    }
+
+    // Clean up title duplicate words (if any) and format trademarks
+    let cleanedTitle = title;
+    cleanedTitle = cleanedTitle.replace(/Certification\s+Certification/gi, 'Certification');
+    cleanedTitle = cleanedTitle.replace(/Certified\s+Certified/gi, 'Certified');
+    cleanedTitle = cleanedTitle.replace(/Program\s+Program/gi, 'Program');
+    cleanedTitle = cleanedTitle.replace(/®®/g, '®').replace(/™™/g, '™');
+
+    return {
+      title: `${cleanedTitle} | Aurenza Academy`,
+      description,
+      openGraph: {
+        title: `${cleanedTitle} | Aurenza Academy`,
+        description,
+        type: 'website'
+      }
+    };
+  } catch (e) {
+    console.error("Failed to generate course metadata:", e);
+    return {
+      title: "Course Details | Aurenza Academy"
+    };
   }
 }
 
@@ -127,6 +178,43 @@ export default async function CourseDetailPage({ params }: PageProps) {
   const baseEnroll = course.reviewsCount ? course.reviewsCount * 412 : 124580;
   const enrolledString = baseEnroll.toLocaleString();
 
+  // Helper to dynamically render a standardized course title in the Hero
+  const renderCourseHeroTitle = (name: string) => {
+    const lower = name.toLowerCase();
+    const hasCert = lower.includes('certification') || lower.includes('certified') || lower.includes('certificate');
+    const hasProg = lower.includes('program') || lower.includes('bootcamp') || lower.includes('course') || lower.includes('training') || lower.includes('mastery') || lower.includes('masters') || lower.includes("master's");
+    
+    if (hasCert && hasProg) {
+      if (name.includes('Certification')) {
+        const parts = name.split('Certification');
+        return <>{parts[0]}<span className="text-gradient-purple-pink">Certification</span>{parts.slice(1).join('Certification')}</>;
+      }
+      if (name.includes('Certified')) {
+        const parts = name.split('Certified');
+        return <><span className="text-gradient-purple-pink">Certified</span>{parts.slice(1).join('Certified')}</>;
+      }
+      return <>{name}</>;
+    }
+    
+    if (hasCert) {
+      if (name.includes('Certification')) {
+        const parts = name.split('Certification');
+        return <>{parts[0]}<span className="text-gradient-purple-pink">Certification</span>{parts.slice(1).join('Certification')} Program</>;
+      }
+      if (name.includes('Certified')) {
+        const parts = name.split('Certified');
+        return <><span className="text-gradient-purple-pink">Certified</span>{parts.slice(1).join('Certified')} Program</>;
+      }
+      return <>{name} Program</>;
+    }
+    
+    if (hasProg) {
+      return <>{name}</>;
+    }
+    
+    return <>{name} <span className="text-gradient-purple-pink">Certification</span> Program</>;
+  };
+
   return (
     <div className="w-full bg-white text-textPrimary overflow-x-hidden font-sans relative">
       {/* Background glow effects */}
@@ -156,7 +244,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
               </span>
               
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#0C182F] heading leading-tight">
-                {course.name} <span className="text-gradient-purple-pink">Certification</span> Program
+                {renderCourseHeroTitle(course.name)}
               </h1>
 
               <p className="text-sm sm:text-base text-textSecondary leading-relaxed max-w-2xl">

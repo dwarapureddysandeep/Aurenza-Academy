@@ -8,7 +8,8 @@
     "build": "node clean.js && next build",
     "start": "next start",
     "lint": "next lint || echo 'Lint skipped'",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "pregenerate": "ts-node --compiler-options {\"module\":\"CommonJS\"} pregenerate_brochures.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.6.0",

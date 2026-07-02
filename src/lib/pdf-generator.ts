@@ -6,7 +6,7 @@ import path from 'path';
 const prisma = new PrismaClient();
 
 export function getSyllabusFileName(title: string): string {
-  const clean = title.replace(/[®™]/g, '').trim();
+  const clean = title.replace(/[®™]/g, '').replace(/\//g, '-').trim();
   return clean
     .split(/[\s-]+/)
     .map(word => {

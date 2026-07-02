@@ -117,3 +117,39 @@ export async function GET(
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function HEAD(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  try {
+    const { slug } = await params;
+
+    if (!slug) {
+      return new NextResponse(null, { status: 400 });
+    }
+
+    const dbCourse = await db.course.findUnique({
+      where: { slug },
+      select: { id: true }
+    });
+
+    if (dbCourse) {
+      return new NextResponse(null, { status: 200 });
+    }
+
+    const certCourse = await db.certificationCourse.findUnique({
+      where: { slug },
+      select: { id: true }
+    });
+
+    if (certCourse) {
+      return new NextResponse(null, { status: 200 });
+    }
+
+    return new NextResponse(null, { status: 404 });
+  } catch (err) {
+    console.error(`Failed to handle HEAD request for brochure check:`, err);
+    return new NextResponse(null, { status: 500 });
+  }
+}
